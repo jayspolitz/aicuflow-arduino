@@ -28,6 +28,12 @@ const int BUTTON_L = 0;
 const int BUTTON_R = 35;
 
 TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite graph = TFT_eSprite(&tft);
+
+const int G_WIDTH = 135;  // Match your screen width
+const int G_HEIGHT = 20;  // 20 pixels high
+float values[G_WIDTH];    // Buffer for auto-scaling
+int head = 0;
 
 #pragma defines // ===
 
@@ -58,7 +64,7 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   tft.pushImage(screenWidth/2-126/2, screenHeight/2-14, 126, 28, aicuflow_logo_wide);
   
-  delay(2000);
+  delay(1000);
 
   // = screen information
   tft.setRotation(0); // Set vertical orientation
@@ -92,7 +98,7 @@ void setup() {
   tft.println(WiFi.localIP());
   tft.println("");
   Serial.print("Mac: "); Serial.println(WiFi.macAddress());
-  delay(2000);
+  delay(500);
 
   // 2. Send HTTP Request
   tft.println("Fetching Data...");
@@ -117,6 +123,9 @@ void setup() {
     }
     http.end();
   }
+
+  graph.createSprite(G_WIDTH, G_HEIGHT);
+  graph.fillSprite(TFT_BLACK);
 }
 
 void loop() {
@@ -159,9 +168,37 @@ void loop() {
   Serial.println(1.0*counter/10);
 
   Serial.println("========");
+  delay(100);
 
+  // === Show sprite graphs ===
+  // 1. Update buffer for auto-scaling
+  values[head] = rssi;
+  head = (head + 1) % G_WIDTH;
+  
+  // 2. Find min/max for auto-scale
+  float vMin = 100, vMax = -100;
+  for(int i=0; i<G_WIDTH; i++) {
+    if(values[i] < vMin) vMin = values[i];
+    if(values[i] > vMax) vMax = values[i];
+  }
+  if (vMax == vMin) vMax = vMin + 1; // Prevent division by zero
 
+  // 3. Scroll graph and draw new point
+  graph.scroll(-1); // Shift left
+  
+  // Map current value to 0-20 pixel height
+  int yPos = map(rssi, vMin, vMax, G_HEIGHT - 1, 0); 
+  
+  // 4. Color logic
+  uint16_t color = TFT_GREEN;
+  if (rssi < -70) color = TFT_YELLOW;
+  if (rssi < -85) color = TFT_RED;
 
-  delay(1000);
+  // Draw the new point on the rightmost edge
+  graph.drawFastVLine(G_WIDTH - 1, 0, G_HEIGHT, TFT_BLACK); // Clear column
+  graph.drawPixel(G_WIDTH - 1, yPos, color);
+  graph.pushSprite(0, tft.height()-20);
+
   // === TODO Stream to Aicuflow Backend ===
+
 }
