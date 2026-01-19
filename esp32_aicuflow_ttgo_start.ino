@@ -14,6 +14,7 @@
 #include "aicuflow_logo_wide.h" // aicuflow_logo_wide
 //
 //#include "esp_clk.h"
+#include "ScrollingGraph.cpp"
 #pragma endregion // ===
 
 #pragma region defines // ===
@@ -28,7 +29,12 @@ const int BUTTON_L = 0;
 const int BUTTON_R = 35;
 
 TFT_eSPI tft = TFT_eSPI();
-TFT_eSprite graph = TFT_eSprite(&tft);
+ScrollingGraph rssiGraph(&tft);
+ScrollingGraph tempGraph(&tft);
+ScrollingGraph voltageGraph(&tft);
+ScrollingGraph heapGraph(&tft);
+ScrollingGraph leftButtonGraph(&tft);
+ScrollingGraph rightButtonGraph(&tft);
 
 const int G_WIDTH = 135;  // Match your screen width
 const int G_HEIGHT = 20;  // 20 pixels high
@@ -123,9 +129,20 @@ void setup() {
     }
     http.end();
   }
+  tft.println("Transmitting...");
 
-  graph.createSprite(G_WIDTH, G_HEIGHT);
-  graph.fillSprite(TFT_BLACK);
+  // Stack them from top to bottom
+  // .begin(x, y, width, height, min, max, color, label)
+  int barheight = 14;
+  int bargap = 3;
+  int fullheight = barheight + bargap;
+
+  heapGraph.begin(0, screenHeight-fullheight*1,  135, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
+  tempGraph.begin(0, screenHeight-fullheight*2,  135, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
+  voltageGraph.begin(0, screenHeight-fullheight*3,  135, barheight, 20, 60,   TFT_ORANGE, "Voltage (V)");
+  rssiGraph.begin(0, screenHeight-fullheight*4,  135, barheight, -100, -30, TFT_GREEN, "RSSI");
+  leftButtonGraph.begin(0, screenHeight-fullheight*5,  135, barheight, 0, 1, TFT_PURPLE, "Button");
+  rightButtonGraph.begin(0, screenHeight-fullheight*6,  135, barheight, 0, 1, TFT_RED, "Button");
 }
 
 void loop() {
@@ -171,33 +188,12 @@ void loop() {
   delay(100);
 
   // === Show sprite graphs ===
-  // 1. Update buffer for auto-scaling
-  values[head] = rssi;
-  head = (head + 1) % G_WIDTH;
-  
-  // 2. Find min/max for auto-scale
-  float vMin = 100, vMax = -100;
-  for(int i=0; i<G_WIDTH; i++) {
-    if(values[i] < vMin) vMin = values[i];
-    if(values[i] > vMax) vMax = values[i];
-  }
-  if (vMax == vMin) vMax = vMin + 1; // Prevent division by zero
-
-  // 3. Scroll graph and draw new point
-  graph.scroll(-1); // Shift left
-  
-  // Map current value to 0-20 pixel height
-  int yPos = map(rssi, vMin, vMax, G_HEIGHT - 1, 0); 
-  
-  // 4. Color logic
-  uint16_t color = TFT_GREEN;
-  if (rssi < -70) color = TFT_YELLOW;
-  if (rssi < -85) color = TFT_RED;
-
-  // Draw the new point on the rightmost edge
-  graph.drawFastVLine(G_WIDTH - 1, 0, G_HEIGHT, TFT_BLACK); // Clear column
-  graph.drawPixel(G_WIDTH - 1, yPos, color);
-  graph.pushSprite(0, tft.height()-20);
+  rssiGraph.update(rssi);
+  voltageGraph.update(voltage);
+  tempGraph.update(temperature);
+  heapGraph.update(heapfree);
+  leftButtonGraph.update(left_button);
+  rightButtonGraph.update(right_button);
 
   // === TODO Stream to Aicuflow Backend ===
 
