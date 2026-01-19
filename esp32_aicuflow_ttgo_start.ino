@@ -41,7 +41,87 @@ const int G_HEIGHT = 20;  // 20 pixels high
 float values[G_WIDTH];    // Buffer for auto-scaling
 int head = 0;
 
-#pragma defines // ===
+#define SEND_SAMPLES 1024 // ping it all 25,6 seconds if 10/sec are recorded;
+// 512 would be about every min
+// 1024 would be about every 2 min, the thing can still easily handle
+// 1024 would be about every 4 min, the thing can still easily handle
+#define MAX_SAMPLES (SEND_SAMPLES*2)
+
+struct Sample {
+  float temperature;
+  float voltage;
+  int left_button;
+  int right_button;
+  float rssi;
+  int heapfree;
+  uint32_t cpu_freq_hz;
+  unsigned long counter;
+};
+
+Sample samples[MAX_SAMPLES];
+uint8_t sampleCount = 0;
+uint32_t loopCounter = 0;
+
+const char* POST_URL = "https://www.postb.in/1768855487559-8489910799544";
+const char* TEST_URL = "https://prod-backend.aicuflow.com/subscriptions/plans/";
+
+#pragma endregion // ===
+
+void ensureWiFi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+
+  static uint32_t lastAttempt = 0;
+  if (millis() - lastAttempt < 5000) return;
+
+  lastAttempt = millis();
+  WiFi.disconnect();
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
+}
+
+void postSamples() {
+  if (WiFi.status() != WL_CONNECTED) return;
+  if (sampleCount == 0) return;
+
+  String json = "[";
+  for (int i = 0; i < sampleCount; i++) {
+    json += "{";
+    json += "\"temperature\":" + String(samples[i].temperature) + ",";
+    json += "\"voltage\":" + String(samples[i].voltage) + ",";
+    json += "\"left_button\":" + String(samples[i].left_button) + ",";
+    json += "\"right_button\":" + String(samples[i].right_button) + ",";
+    json += "\"rssi\":" + String(samples[i].rssi) + ",";
+    json += "\"heapfree\":" + String(samples[i].heapfree) + ",";
+    json += "\"cpu_freq_hz\":" + String(samples[i].cpu_freq_hz) + ",";
+    json += "\"counter\":" + String(samples[i].counter);
+    json += "}";
+
+  float temperature;
+  float voltage;
+  int left_button;
+  int right_button;
+  float rssi;
+  int heapfree;
+  uint32_t cpu_freq_hz;
+  unsigned long counter;
+    if (i < sampleCount - 1) json += ",";
+  }
+  json += "]";
+
+  HTTPClient http;
+  http.begin(POST_URL);
+  http.addHeader("Content-Type", "application/json");
+
+  int code = http.POST(json);
+
+  // optional debug
+  Serial.printf("POST %d (%d samples)\n", code, sampleCount);
+
+  http.end();
+
+  if (code > 0 && code < 300) {
+    sampleCount = 0; // clear only on success
+  }
+}
 
 void setup() {
   // === Pin Setup ===
@@ -112,7 +192,7 @@ void setup() {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     // Example: Fetching a test JSON object
-    http.begin("https://prod-backend.aicuflow.com/subscriptions/plans/"); 
+    http.begin(TEST_URL); 
     int httpCode = http.GET();
 
     if (httpCode > 0) {
@@ -196,5 +276,25 @@ void loop() {
   rightButtonGraph.update(right_button);
 
   // === TODO Stream to Aicuflow Backend ===
+  // "https://www.postb.in/1768855487559-8489910799544"
 
+  if (sampleCount < MAX_SAMPLES) {
+    samples[sampleCount++] = {
+      temperature,
+      voltage,
+      left_button,
+      right_button,
+      rssi,
+      heapfree,
+      cpu_freq_hz,
+      counter,
+    };
+  }
+
+  loopCounter++;
+  
+  if (loopCounter % SEND_SAMPLES == 0) {
+    ensureWiFi();
+    postSamples();
+  }
 }
