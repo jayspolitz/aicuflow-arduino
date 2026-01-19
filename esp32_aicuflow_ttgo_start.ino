@@ -12,6 +12,8 @@
 // graphic imports
 #include "aicuflow_logo_64px.h" // aicuflow_logo
 #include "aicuflow_logo_wide.h" // aicuflow_logo_wide
+//
+//#include "esp_clk.h"
 #pragma endregion // ===
 
 #pragma region defines // ===
@@ -130,6 +132,12 @@ void loop() {
   int right_button = digitalRead(BUTTON_R) == 0;
   float rssi = WiFi.RSSI();
   int heapfree = ESP.getFreeHeap();
+  uint32_t cpu_freq_hz = getCpuFrequencyMhz(); 
+  unsigned long start = millis();
+  unsigned long counter = 0;
+  while (millis() - start < 10) {
+      counter++; // Simple loop to count iterations per second
+  }
 
   Serial.print("Millis since start: ");
   Serial.println(millis());
@@ -145,8 +153,14 @@ void loop() {
   Serial.println(rssi);
   Serial.print("Free Memory: ");
   Serial.println(heapfree);
-  
+  Serial.print("CPU Freq Hz: ");
+  Serial.println(cpu_freq_hz);
+  Serial.print("Iterations per ms: ");
+  Serial.println(1.0*counter/10);
+
   Serial.println("========");
+
+
 
   delay(1000);
   // === TODO Stream to Aicuflow Backend ===
