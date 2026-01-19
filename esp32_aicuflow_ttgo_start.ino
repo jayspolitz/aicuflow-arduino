@@ -9,6 +9,7 @@
 // wifi imports
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h> // 7.4.2 by Benoit
 // graphic imports
 #include "aicuflow_logo_64px.h" // aicuflow_logo
 #include "aicuflow_logo_wide.h" // aicuflow_logo_wide
@@ -22,8 +23,10 @@
 #define WLAN_SSID "aicuflow"
 #define WLAN_PASS "#aicuties"
 
-#define AICU_USER "YOUR_EMAIL"
-#define AICU_PASSWORD "YOUR_PASSWORD"
+#define AICU_USER "your_user"
+#define AICU_PASSWORD "your_user"
+
+String accessToken; // to store the token
 
 const int BUTTON_L = 0;
 const int BUTTON_R = 35;
@@ -41,10 +44,10 @@ const int G_HEIGHT = 20;  // 20 pixels high
 float values[G_WIDTH];    // Buffer for auto-scaling
 int head = 0;
 
-#define SEND_SAMPLES 1024 // ping it all 25,6 seconds if 10/sec are recorded;
+#define SEND_SAMPLES 256 // ping it all 25,6 seconds if 10/sec are recorded;
 // 512 would be about every min
 // 1024 would be about every 2 min, the thing can still easily handle
-// 1024 would be about every 4 min, the thing can still easily handle
+// 2048 would be about every 4 min, the thing can still easily handle
 #define MAX_SAMPLES (SEND_SAMPLES*2)
 
 struct Sample {
@@ -59,11 +62,14 @@ struct Sample {
 };
 
 Sample samples[MAX_SAMPLES];
-uint8_t sampleCount = 0;
+uint32_t sampleCount = 0;
 uint32_t loopCounter = 0;
 
-const char* POST_URL = "https://www.postb.in/1768855487559-8489910799544";
-const char* TEST_URL = "https://prod-backend.aicuflow.com/subscriptions/plans/";
+const char* BASE_URL = "https://dev-backend.aicuflow.com";
+const char* POST_URL = "/data/write-values/?filename=";
+const char* FILE_NAME = "esp32_sensors.arrow";
+const char* FLOW_ID = "1e1c8e2e-dce6-48f1-bfe7-b49598367445";
+const char* TEST_URL = "/subscriptions/plans/";
 
 #pragma endregion // ===
 
@@ -77,6 +83,74 @@ void ensureWiFi() {
   WiFi.disconnect();
   WiFi.begin(WLAN_SSID, WLAN_PASS);
 }
+
+bool login() {
+  HTTPClient http;
+  String url = String(BASE_URL) + "/user/auth/login/";
+
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+
+  StaticJsonDocument<256> payload;
+  payload["email"] = AICU_USER;
+  payload["password"] = AICU_PASSWORD;
+  payload["keep_me_logged_in"] = true;
+
+  String body;
+  serializeJson(payload, body);
+
+  int code = http.POST(body);
+  if (code != 200) {
+    Serial.print("Login failed, code: ");
+    Serial.println(code);
+    http.end();
+    return false;
+  }
+
+  String response = http.getString();
+  http.end();
+
+  StaticJsonDocument<1024> doc;
+  DeserializationError err = deserializeJson(doc, response);
+  if (err) {
+    Serial.println("JSON parse error (login)");
+    return false;
+  }
+
+  accessToken = doc["data"]["accesstoken"].as<String>();
+  Serial.println("Login OK");
+  return true;
+}
+
+int listFlowsAndCount() {
+  HTTPClient http;
+  String url = String(BASE_URL) + "/flows/?page=1&page_size=100";
+
+  http.begin(url);
+  http.addHeader("Authorization", "Bearer " + accessToken);
+
+  int code = http.GET();
+  if (code != 200) {
+    Serial.print("List flows failed, code: ");
+    Serial.println(code);
+    http.end();
+    return -1;
+  }
+
+  String response = http.getString();
+  http.end();
+
+  StaticJsonDocument<8192> doc;
+  DeserializationError err = deserializeJson(doc, response);
+  if (err) {
+    Serial.println("JSON parse error (flows)");
+    return -1;
+  }
+
+  JsonArray flows = doc["data"].as<JsonArray>();
+  return flows.size();
+}
+
 
 void postSamples() {
   if (WiFi.status() != WL_CONNECTED) return;
@@ -108,7 +182,8 @@ void postSamples() {
   json += "]";
 
   HTTPClient http;
-  http.begin(POST_URL);
+  http.begin(String(BASE_URL) + POST_URL + FILE_NAME + "&flow=" + FLOW_ID);
+  http.addHeader("Authorization", "Bearer " + accessToken);
   http.addHeader("Content-Type", "application/json");
 
   int code = http.POST(json);
@@ -189,10 +264,19 @@ void setup() {
   // 2. Send HTTP Request
   tft.println("Fetching Data...");
 
+  if (login()) {
+    tft.println("API connected!");
+
+    int flowCount = listFlowsAndCount();
+    tft.print("Found "); tft.print(flowCount); tft.println(" Flows!");
+  } else {
+    tft.println("Auth failed! :/");
+  }
+
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     // Example: Fetching a test JSON object
-    http.begin(TEST_URL); 
+    http.begin(String(BASE_URL) + TEST_URL); 
     int httpCode = http.GET();
 
     if (httpCode > 0) {
@@ -201,7 +285,6 @@ void setup() {
       tft.printf("Code: %d\n", httpCode);
       tft.setTextSize(1);
       tft.setTextColor(TFT_WHITE);
-      tft.println("API connected!");
       //tft.println(payload.substring(0, 150)); // Show snippet
     } else {
       tft.setTextColor(TFT_RED);
