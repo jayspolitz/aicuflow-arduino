@@ -1,11 +1,41 @@
+#pragma region imports // ===
 #include <TFT_eSPI.h> // Graphics and font library by "Bodmer" install v2.5.43 before anything, maybe needs to be ported in
+// TFT_eSPI: Needs modifications under Arduino/libraries/TFT_eSPI/User_Setup_Select.h:
+//   UNCOMMENT THIS in that file:
+//   // #include <User_Setups/Setup25_TTGO_T_Display.h>    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
+//   COMMENT THIS out in that file:
+//   #include <User_Setup.h>           // Default setup is root library folder
 #include <SPI.h>
+// wifi imports
+#include <WiFi.h>
+#include <HTTPClient.h>
+// graphic imports
 #include "aicuflow_logo_64px.h" // aicuflow_logo
 #include "aicuflow_logo_wide.h" // aicuflow_logo_wide
+#pragma endregion // ===
+
+#pragma region defines // ===
+
+#define WLAN_SSID "aicuflow"
+#define WLAN_PASS "#aicuties"
+
+#define AICU_USER "YOUR_EMAIL"
+#define AICU_PASSWORD "YOUR_PASSWORD"
+
+const int BUTTON_L = 0;
+const int BUTTON_R = 35;
 
 TFT_eSPI tft = TFT_eSPI();
 
+#pragma defines // ===
+
 void setup() {
+  // === Pin Setup ===
+  pinMode(BUTTON_L, INPUT_PULLUP); // Button 1
+  pinMode(BUTTON_R, INPUT);        // Button 2 (GPIO 35 is input-only)
+  pinMode(14, OUTPUT); // voltage?
+  digitalWrite(14, HIGH);
+
   // === Serial Boot ===
   Serial.begin(115200);
   while (!Serial) {}
@@ -46,12 +76,78 @@ void setup() {
   tft.println("Device started...");
 
 
-  // === TODO WIFI Setup ===
+  // === WIFI Setup ===
+    // 1. Connect to WiFi
+  tft.print("Connecting to wifi");
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    tft.print("."); // Loading progress
+  }
+  tft.print("\n");
+  tft.println("WiFi Connected!");
+  tft.print("IP: "); 
+  tft.println(WiFi.localIP());
+  tft.println("");
+  Serial.print("Mac: "); Serial.println(WiFi.macAddress());
+  delay(2000);
+
+  // 2. Send HTTP Request
+  tft.println("Fetching Data...");
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    // Example: Fetching a test JSON object
+    http.begin("https://prod-backend.aicuflow.com/subscriptions/plans/"); 
+    int httpCode = http.GET();
+
+    if (httpCode > 0) {
+      String payload = http.getString();
+      tft.setTextColor(TFT_CYAN);
+      tft.printf("Code: %d\n", httpCode);
+      tft.setTextSize(1);
+      tft.setTextColor(TFT_WHITE);
+      tft.println("API connected!");
+      //tft.println(payload.substring(0, 150)); // Show snippet
+    } else {
+      tft.setTextColor(TFT_RED);
+      tft.println("HTTP Error");
+    }
+    http.end();
+  }
 }
 
 void loop() {
-  Serial.print("Millis: ");
+  // === Measure and print time series ===
+  uint16_t raw = analogRead(34);
+  // 2.0 = Divider ratio (100k/100k resistors)
+  // 3.3 = Reference voltage
+  // 4095 = 12-bit ADC resolution
+  float voltage = (raw / 4095.0) * 2.0 * 3.3 * 1.1; 
+  //float voltage = (analogRead(35) / 4095.0) * 2.0 * 3.3 * 1.1;
+  float temperature = (temperatureRead());
+  int left_button = digitalRead(BUTTON_L) == 0;
+  int right_button = digitalRead(BUTTON_R) == 0;
+  float rssi = WiFi.RSSI();
+  int heapfree = ESP.getFreeHeap();
+
+  Serial.print("Millis since start: ");
   Serial.println(millis());
+  Serial.print("Chip Voltage: ");
+  Serial.println(voltage);
+  Serial.print("Chip Temperature (°C): ");
+  Serial.println(temperature);
+  Serial.print("Left Button: ");
+  Serial.println(left_button);
+  Serial.print("Right Button: ");
+  Serial.println(right_button);
+  Serial.print("Wifi RSSI: ");
+  Serial.println(rssi);
+  Serial.print("Free Memory: ");
+  Serial.println(heapfree);
+  
+  Serial.println("========");
+
   delay(1000);
-  // Add dynamic content here
+  // === TODO Stream to Aicuflow Backend ===
 }
