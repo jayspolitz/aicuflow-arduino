@@ -26,26 +26,17 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   tft.pushImage(screenWidth/2-126/2, screenHeight/2-14, 126, 28, aicuflow_logo_wide);
   
-  delay(5000);
-
-  // = boot screen 2
-  tft.setRotation(0); // Set vertical orientation
-  tft.setCursor(0, 0);
-  tft.fillScreen(TFT_BLACK);
-  tft.pushImage(screenWidth/2-32, screenHeight/2-32, 64, 64, aicuflow_logo);
-  
-  delay(5000);
+  delay(2000);
 
   // = screen information
   tft.setRotation(0); // Set vertical orientation
   tft.setCursor(0, 0);
   tft.fillScreen(TFT_BLACK);
-  tft.pushImage(screenWidth/2-32, 6, 64, 64, aicuflow_logo);
-  tft.setCursor(0, 75);
-  tft.setTextColor(TFT_AICU_TEAL, TFT_BLACK); 
-  tft.setTextSize(2);
+  tft.pushImage(screenWidth/2-126/2, 0, 126, 28, aicuflow_logo_wide);
+  tft.setCursor(0, 32);
+  // tft.setTextColor(TFT_AICU_TEAL, TFT_BLACK); 
+  // tft.setTextSize(2);
   // tft.invertDisplay(true);
-  tft.println("#aicuflow32");
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.println("ESP32 IoT-AI Endpoint");
