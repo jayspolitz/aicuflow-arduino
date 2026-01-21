@@ -56,6 +56,10 @@ int screenWidth, screenHeight;
 WiFiClientSecure client;
 AicuClient aicu("https://prod-backend.aicuflow.com", true);
 
+/**
+ *  Function definitions
+*/
+
 // json collect & stream
 static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2); // est. data size + buffer
 static JsonArray arr;
@@ -205,6 +209,10 @@ void connectAPI() {
     Serial.println("Login success!");
   }
 }
+
+/**
+ *  Aicuflow x Arduino Setup & Loop
+*/
 
 void setup() {
   initPoints();
