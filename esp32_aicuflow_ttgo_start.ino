@@ -1,3 +1,6 @@
+#define USE_DISPLAY 0
+#define USE_HALL 0 // google says its only in v2.x?
+
 #pragma region imports // ===
 #include <TFT_eSPI.h> // Graphics and font library by "Bodmer" install v2.5.43 before anything, maybe needs to be ported in
 // TFT_eSPI: Needs modifications under Arduino/libraries/TFT_eSPI/User_Setup_Select.h:
@@ -17,6 +20,18 @@
 //#include "esp_clk.h"
 #include "ScrollingGraph.cpp"
 #pragma endregion // ===
+#include <esp_wifi.h>
+// After WiFi.mode(WIFI_STA) but before WiFi.begin()
+/**
+ *
+ *  Compiling for different devices!
+
+ttgo t1
+
+liligo t3 s3
+
+ *
+ */
 
 #pragma region defines // ===
 
@@ -31,6 +46,7 @@ String accessToken; // to store the token
 const int BUTTON_L = 0;
 const int BUTTON_R = 35;
 
+#if USE_DISPLAY
 TFT_eSPI tft = TFT_eSPI();
 ScrollingGraph rssiGraph(&tft);
 ScrollingGraph tempGraph(&tft);
@@ -43,14 +59,17 @@ const int G_WIDTH = 135;  // Match your screen width
 const int G_HEIGHT = 20;  // 20 pixels high
 float values[G_WIDTH];    // Buffer for auto-scaling
 int head = 0;
+#endif
 
-#define SEND_SAMPLES 256 // ping it all 25,6 seconds if 10/sec are recorded;
+
+#define SEND_SAMPLES 64 // ping it all 25,6 seconds if 10/sec are recorded;
 // 512 would be about every min
 // 1024 would be about every 2 min, the thing can still easily handle
 // 2048 would be about every 4 min, the thing can still easily handle
 #define MAX_SAMPLES (SEND_SAMPLES*2)
 
 struct Sample {
+  unsigned long millis;
   float temperature;
   float voltage;
   int left_button;
@@ -67,8 +86,9 @@ uint32_t loopCounter = 0;
 
 const char* BASE_URL = "https://dev-backend.aicuflow.com";
 const char* POST_URL = "/data/write-values/?filename=";
-const char* FILE_NAME = "esp32_sensors.arrow";
-const char* FLOW_ID = "1e1c8e2e-dce6-48f1-bfe7-b49598367445";
+const char* FILE_NAME = "esp32.arrow";
+const char* FLOW_ID = "9dd5d0a6-25a3-4e65-8aa6-04ec531de88c";
+const char* DEVICE_ID = "dev"; // ttgo (t1), esp32 t display s3
 const char* TEST_URL = "/subscriptions/plans/";
 
 #pragma endregion // ===
@@ -159,6 +179,8 @@ void postSamples() {
   String json = "[";
   for (int i = 0; i < sampleCount; i++) {
     json += "{";
+    json += "\"millis\":" + String(samples[i].millis) + ",";
+    json += "\"device\":\"" + String(DEVICE_ID) + "\",";
     json += "\"temperature\":" + String(samples[i].temperature) + ",";
     json += "\"voltage\":" + String(samples[i].voltage) + ",";
     json += "\"left_button\":" + String(samples[i].left_button) + ",";
@@ -166,7 +188,7 @@ void postSamples() {
     json += "\"rssi\":" + String(samples[i].rssi) + ",";
     json += "\"heapfree\":" + String(samples[i].heapfree) + ",";
     json += "\"cpu_freq_hz\":" + String(samples[i].cpu_freq_hz) + ",";
-    json += "\"counter\":" + String(samples[i].counter);
+    json += "\"cpu_speed\":" + String(samples[i].counter);
     json += "}";
 
   float temperature;
@@ -199,6 +221,8 @@ void postSamples() {
 }
 
 void setup() {
+  esp_wifi_set_max_tx_power(52); // Approximately 13dBm
+
   // === Pin Setup ===
   pinMode(BUTTON_L, INPUT_PULLUP); // Button 1
   pinMode(BUTTON_R, INPUT);        // Button 2 (GPIO 35 is input-only)
@@ -209,68 +233,85 @@ void setup() {
   Serial.begin(115200);
   while (!Serial) {}
   Serial.println("Aicuflow ESP32 booted");
-  int screenWidth  = tft.width();
-  int screenHeight = tft.height();
 
-  Serial.print("Width: "); Serial.println(screenWidth); // 135
-  Serial.print("Height: "); Serial.println(screenHeight); // 240
+  #if USE_DISPLAY
+    int screenWidth  = tft.width();
+    int screenHeight = tft.height();
 
-  // === Display Startup ===
-  uint16_t TFT_AICU_TEAL = tft.color565(101, 195, 186);
-  tft.init();
+    Serial.print("Width: "); Serial.println(screenWidth); // 135
+    Serial.print("Height: "); Serial.println(screenHeight); // 240
 
-  // = boot screen 1
-  tft.setRotation(0); // Set vert orientation
-  tft.setCursor(0, 0);
-  tft.fillScreen(TFT_BLACK);
-  tft.pushImage(screenWidth/2-126/2, screenHeight/2-14, 126, 28, aicuflow_logo_wide);
-  
+    // === Display Startup ===
+    uint16_t TFT_AICU_TEAL = tft.color565(101, 195, 186);
+    tft.init();
+
+    // = boot screen 1
+    tft.setRotation(0); // Set vert orientation
+    tft.setCursor(0, 0);
+    tft.fillScreen(TFT_BLACK);
+    tft.pushImage(screenWidth/2-126/2, screenHeight/2-14, 126, 28, aicuflow_logo_wide);
+  #endif
+
   delay(1000);
 
-  // = screen information
-  tft.setRotation(0); // Set vertical orientation
-  tft.setCursor(0, 0);
-  tft.fillScreen(TFT_BLACK);
-  tft.pushImage(screenWidth/2-126/2, 0, 126, 28, aicuflow_logo_wide);
-  tft.setCursor(0, 32);
-  // tft.setTextColor(TFT_AICU_TEAL, TFT_BLACK); 
-  // tft.setTextSize(2);
-  // tft.invertDisplay(true);
-  tft.setTextSize(1);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println("ESP32 IoT-AI Endpoint");
-  tft.println("https://aicuflow.com");
-  tft.println("");
-  tft.println("");
-  tft.println("Device started...");
+  #if USE_DISPLAY
+    // = screen information
+    tft.setRotation(0); // Set vertical orientation
+    tft.setCursor(0, 0);
+    tft.fillScreen(TFT_BLACK);
+    tft.pushImage(screenWidth/2-126/2, 0, 126, 28, aicuflow_logo_wide);
+    tft.setCursor(0, 32);
+    // tft.setTextColor(TFT_AICU_TEAL, TFT_BLACK); 
+    // tft.setTextSize(2);
+    // tft.invertDisplay(true);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.println("ESP32 IoT-AI Endpoint");
+    tft.println("https://aicuflow.com");
+    tft.println("");
+    tft.println("");
+    tft.println("Device started...");
+  #endif
 
 
   // === WIFI Setup ===
     // 1. Connect to WiFi
-  tft.print("Connecting to wifi");
+  #if USE_DISPLAY
+    tft.print("Connecting to wifi");
+  #endif
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    tft.print("."); // Loading progress
+    #if USE_DISPLAY
+      tft.print("."); // Loading progress
+    #endif
   }
-  tft.print("\n");
-  tft.println("WiFi Connected!");
-  tft.print("IP: "); 
-  tft.println(WiFi.localIP());
-  tft.println("");
+  #if USE_DISPLAY
+    tft.print("\n");
+    tft.println("WiFi Connected!");
+    tft.print("IP: "); 
+    tft.println(WiFi.localIP());
+    tft.println("");
+  #endif
+
   Serial.print("Mac: "); Serial.println(WiFi.macAddress());
   delay(500);
 
   // 2. Send HTTP Request
-  tft.println("Fetching Data...");
+  #if USE_DISPLAY
+    tft.println("Fetching Data...");
+  #endif
 
   if (login()) {
-    tft.println("API connected!");
-
     int flowCount = listFlowsAndCount();
-    tft.print("Found "); tft.print(flowCount); tft.println(" Flows!");
+    #if USE_DISPLAY
+      tft.println("API connected!");
+      tft.print("Found "); tft.print(flowCount); tft.println(" Flows!");
+    #endif
   } else {
-    tft.println("Auth failed! :/");
+    #if USE_DISPLAY
+      tft.println("Auth failed! :/");
+    #endif
   }
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -279,33 +320,39 @@ void setup() {
     http.begin(String(BASE_URL) + TEST_URL); 
     int httpCode = http.GET();
 
-    if (httpCode > 0) {
-      String payload = http.getString();
-      tft.setTextColor(TFT_CYAN);
-      tft.printf("Code: %d\n", httpCode);
-      tft.setTextSize(1);
-      tft.setTextColor(TFT_WHITE);
-      //tft.println(payload.substring(0, 150)); // Show snippet
-    } else {
-      tft.setTextColor(TFT_RED);
-      tft.println("HTTP Error");
-    }
+    #if USE_DISPLAY
+      if (httpCode > 0) {
+        String payload = http.getString();
+        tft.setTextColor(TFT_CYAN);
+        tft.printf("Code: %d\n", httpCode);
+        tft.setTextSize(1);
+        tft.setTextColor(TFT_WHITE);
+        //tft.println(payload.substring(0, 150)); // Show snippet
+      } else {
+        tft.setTextColor(TFT_RED);
+        tft.println("HTTP Error");
+      }
+    #endif
+
     http.end();
   }
-  tft.println("Transmitting...");
+  #if USE_DISPLAY
+    tft.println("Transmitting...");
+  #endif
 
-  // Stack them from top to bottom
-  // .begin(x, y, width, height, min, max, color, label)
-  int barheight = 14;
-  int bargap = 3;
-  int fullheight = barheight + bargap;
-
-  heapGraph.begin(0, screenHeight-fullheight*1,  135, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
-  tempGraph.begin(0, screenHeight-fullheight*2,  135, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
-  voltageGraph.begin(0, screenHeight-fullheight*3,  135, barheight, 20, 60,   TFT_ORANGE, "Voltage (V)");
-  rssiGraph.begin(0, screenHeight-fullheight*4,  135, barheight, -100, -30, TFT_GREEN, "RSSI");
-  leftButtonGraph.begin(0, screenHeight-fullheight*5,  135, barheight, 0, 1, TFT_PURPLE, "Button");
-  rightButtonGraph.begin(0, screenHeight-fullheight*6,  135, barheight, 0, 1, TFT_RED, "Button");
+  #if USE_DISPLAY
+    // Stack them from top to bottom
+    // .begin(x, y, width, height, min, max, color, label)
+    int barheight = 14;
+    int bargap = 3;
+    int fullheight = barheight + bargap;
+    heapGraph.begin(0, screenHeight-fullheight*1,  135, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
+    tempGraph.begin(0, screenHeight-fullheight*2,  135, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
+    voltageGraph.begin(0, screenHeight-fullheight*3,  135, barheight, 20, 60,   TFT_ORANGE, "Voltage (V)");
+    rssiGraph.begin(0, screenHeight-fullheight*4,  135, barheight, -100, -30, TFT_GREEN, "RSSI");
+    leftButtonGraph.begin(0, screenHeight-fullheight*5,  135, barheight, 0, 1, TFT_PURPLE, "Button");
+    rightButtonGraph.begin(0, screenHeight-fullheight*6,  135, barheight, 0, 1, TFT_RED, "Button");
+  #endif
 }
 
 void loop() {
@@ -351,18 +398,21 @@ void loop() {
   delay(100);
 
   // === Show sprite graphs ===
-  rssiGraph.update(rssi);
-  voltageGraph.update(voltage);
-  tempGraph.update(temperature);
-  heapGraph.update(heapfree);
-  leftButtonGraph.update(left_button);
-  rightButtonGraph.update(right_button);
+  #if USE_DISPLAY
+    rssiGraph.update(rssi);
+    voltageGraph.update(voltage);
+    tempGraph.update(temperature);
+    heapGraph.update(heapfree);
+    leftButtonGraph.update(left_button);
+    rightButtonGraph.update(right_button);
+  #endif
 
   // === TODO Stream to Aicuflow Backend ===
   // "https://www.postb.in/1768855487559-8489910799544"
 
   if (sampleCount < MAX_SAMPLES) {
     samples[sampleCount++] = {
+      millis(),
       temperature,
       voltage,
       left_button,
