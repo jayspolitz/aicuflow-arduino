@@ -17,8 +17,8 @@ const char* AICU_USER = "your-user";
 const char* AICU_PASS = "your-pass";
 const char* WIFI_SSID = "your-wifi";
 const char* WIFI_PASS = "your-pass";
-const char* PROJECT_FLOW = "your-ai-cu-flow-uuid";
-const char* PROJECT_FILE = "stream-test.arrow";
+const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
+const char* PROJ_FILE = "stream-test.arrow";
 
 WiFiClientSecure client;
 AicuClient aicu("https://prod-backend.aicuflow.com", true);
@@ -38,7 +38,7 @@ void setup() {
     point["value1"] = 42.1;
     point["value2"] = 42.7;
 
-    aicu.sendTimeseriesPoints(PROJECT_FLOW, PROJECT_FILE, points);
+    aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, points);
 }
 
 /* --- LOOP - Nothing --- */

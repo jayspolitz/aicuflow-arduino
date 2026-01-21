@@ -22,8 +22,8 @@ const char* AICU_PASS = "your-pass";
 const char* WIFI_SSID = "your-wifi";
 const char* WIFI_PASS = "your-pass";
 
-const char* PROJECT_FLOW = "your-ai-cu-flow-uuid";
-const char* PROJECT_FILE = "stream-test.arrow";
+const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
+const char* PROJ_FILE = "stream-test.arrow";
 
 WiFiClientSecure client;
 AicuClient aicu("https://prod-backend.aicuflow.com", true);
@@ -76,7 +76,7 @@ void setup() {
     p2["ts"] = 1700000060;
     p2["value"] = 43.0;
 
-    if (aicu.sendTimeseriesPoints(PROJECT_FLOW, PROJECT_FILE, points)) {
+    if (aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, points)) {
         Serial.println("Timeseries sent successfully!");
     } else {
         Serial.println("Failed to send timeseries!");
