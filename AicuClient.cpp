@@ -41,6 +41,7 @@ bool AicuClient::_getJson(const String& path, JsonDocument& doc) {
 
     HTTPClient http;
     http.begin(*_client, _baseUrl + path);
+    http.setTimeout(10000); // 10 seconds
     if (_authHeader.length()) http.addHeader("Authorization", _authHeader);
 
     if (_verbose) Serial.print("GET "); Serial.println(_baseUrl + path);
@@ -73,6 +74,7 @@ bool AicuClient::_postJson(const String& path, JsonDocument& payload, JsonDocume
 
     HTTPClient http;
     http.begin(*_client, _baseUrl + path);
+    http.setTimeout(10000); // 10 seconds
     http.addHeader("Content-Type", "application/json");
     if (_authHeader.length()) http.addHeader("Authorization", _authHeader);
 
