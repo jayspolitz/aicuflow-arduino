@@ -139,15 +139,17 @@ void sendTask(void* parameter) {
 void initGraphs() {
   tft.println("Measuring...");
   int barheight = 14;
+  if (device.kind_slug == "lilygo-t-display-s3") barheight = 22;
   int bargap = 3;
+  if (device.kind_slug == "lilygo-t-display-s3") bargap = 5;
   int fullheight = barheight + bargap;
   // .begin(x, y, width, height, min, max, color, label)
-  rightButtonGraph.begin(0, screenHeight-fullheight*6,  135, barheight, 0, 1, TFT_BLUE, "Button");
-  leftButtonGraph.begin(0, screenHeight-fullheight*5,  135, barheight, 0, 1, TFT_PURPLE, "Button");
-  rssiGraph.begin(0, screenHeight-fullheight*4,  135, barheight, -100, -30, TFT_GREEN, "RSSI");
-  voltageGraph.begin(0, screenHeight-fullheight*3,  135, barheight, 20, 60,   TFT_RED, "Voltage (V)");
-  tempGraph.begin(0, screenHeight-fullheight*2,  135, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
-  heapGraph.begin(0, screenHeight-fullheight*1,  135, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
+  rightButtonGraph.begin(0, screenHeight-fullheight*6,  screenWidth, barheight, 0, 1, TFT_BLUE, "Button");
+  leftButtonGraph.begin(0, screenHeight-fullheight*5,  screenWidth, barheight, 0, 1, TFT_PURPLE, "Button");
+  rssiGraph.begin(0, screenHeight-fullheight*4,  screenWidth, barheight, -100, -30, TFT_GREEN, "RSSI");
+  voltageGraph.begin(0, screenHeight-fullheight*3,  screenWidth, barheight, 20, 60,   TFT_RED, "Voltage (V)");
+  tempGraph.begin(0, screenHeight-fullheight*2,  screenWidth, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
+  heapGraph.begin(0, screenHeight-fullheight*1,  screenWidth, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
 }
 void updateGraphs(const Sample &s) {
     rightButtonGraph.update(s.B_R);
@@ -222,11 +224,14 @@ void plotScreen(int duration=1000) {
     tft.setRotation(0); // vertical
     tft.setCursor(0, 0);
     tft.fillScreen(TFT_BLACK); // aicu logo
-    tft.pushImage(screenWidth/2-126/2, 0, 126, 28, aicuflow_logo_wide);
+    int topoffset = 0;
+    if (device.kind_slug == "lilygo-t-display-s3") topoffset = 6;
+    tft.pushImage(screenWidth/2-126/2, topoffset, 126, 28, aicuflow_logo_wide);
     tft.setCursor(0, 32);
+    if (device.kind_slug == "lilygo-t-display-s3") tft.println("");
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK); // details
-    tft.println("ESP32 IoT-AI Endpoint");
+    tft.println("Aicu IoT-AI Endpoint");
     tft.println("https://aicuflow.com");
     tft.println("");
     tft.println("");
@@ -279,9 +284,9 @@ void setup() {
   initDeviceGPIOPins();
   initSerial();
   
-  if (!device.has_display) delay(1000);
+  if (!device.has_display) delay(5000);
   if (device.has_display)  initTFTScreen();
-  if (device.has_display)  bootScreen(1000);
+  if (device.has_display)  bootScreen(5000);
   if (device.has_display)  plotScreen(1000);
   if (device.has_wifi)     connectWifiBlocking();
   if (device.has_wifi)     connectAPI();
