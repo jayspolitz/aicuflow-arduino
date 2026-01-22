@@ -47,10 +47,9 @@ const char* PROJ_FILE = "esp32.arrow";
 
 const int VERBOSE = true;
 const char* DEVICE_ID = "ttt1"; // ttgo (t1), esp32 t display s3
-const int POINTS_BATCH_SIZE = 128; // 64 always works, 256 sometimes did, but may be too large.
+const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
-const int BUTTON_L = 0;
-const int BUTTON_R = 35;
+int BUTTON_L, BUTTON_R;
 
 const auto& device = getDeviceProps();
 TFT_eSPI tft = TFT_eSPI();
@@ -172,11 +171,28 @@ inline void printSampledValues(const Sample &s) {
 }
 
 // initing
-void initGPIOPins() {
-  pinMode(BUTTON_L, INPUT_PULLUP);
-  pinMode(BUTTON_R, INPUT);
-  pinMode(14, OUTPUT);
-  digitalWrite(14, HIGH);
+void initDeviceGPIOPins() {
+  // specifics
+  if (device.kind_slug == "esp32-ttgo-t1") {
+    // voltage divider something
+    pinMode(14, OUTPUT);
+    digitalWrite(14, HIGH);
+
+    // buttons
+    BUTTON_L = 0;
+    BUTTON_R = 35;
+    pinMode(BUTTON_L, INPUT_PULLUP);
+    pinMode(BUTTON_R, INPUT);
+  } else if (device.kind_slug == "lilygo-t-display-s3") {
+    // buttons
+    BUTTON_L = 0;
+    BUTTON_R = 14;
+    pinMode(BUTTON_L, INPUT_PULLUP);
+    pinMode(BUTTON_R, INPUT);
+
+    // power up
+    esp_wifi_set_max_tx_power(52); // ca 13dBm
+  }
 }
 void initSerial() {
   Serial.begin(115200);
@@ -260,7 +276,7 @@ void connectAPI() {
 
 void setup() {
   initPoints();
-  initGPIOPins();
+  initDeviceGPIOPins();
   initSerial();
   
   if (!device.has_display) delay(1000);
