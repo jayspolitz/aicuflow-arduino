@@ -54,6 +54,7 @@ int BUTTON_L, BUTTON_R;
 const int SCREEN_IDLE_MS = 30000; // also needs TFT_BL eg 38
 static uint32_t lastInputMs = 0;
 static bool screenAwake = true;
+static bool wifiAvailable = false;
 
 const auto& device = getDeviceProps();
 TFT_eSPI tft = TFT_eSPI();
@@ -184,7 +185,6 @@ void plotScreen(int duration=1000) {
 void connectWifiBlocking() {
   if (device.has_display) tft.print("Connecting to wifi");
   WiFi.begin(WLAN_SSID, WLAN_PASS);
-
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     if (device.has_display) tft.print("."); // Loading progress
@@ -193,13 +193,13 @@ void connectWifiBlocking() {
   client.setInsecure(); // TLS workaround
   aicu.setWiFiClient(&client);
   
-  if (device.has_display) {
+  if (wifiAvailable && device.has_display) {
     tft.print("\n");
     tft.println("WiFi Connected!");
     tft.print("IP: "); 
     tft.println(WiFi.localIP());
     tft.println("");
-  }
+  } else if (device.has_display) tft.print("\n");
   Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
   delay(500);
 }
@@ -287,7 +287,7 @@ void setup() {
   if (device.has_display)  bootScreen(3000);
   if (device.has_display)  plotScreen(1000);
   if (device.has_wifi)     connectWifiBlocking();
-  if (device.has_wifi)     connectAPI();
+  if (device.has_wifi && wifiAvailable) connectAPI();
 
   registerAllSensors();
   if (device.has_display)  initSensorGraphs();
@@ -309,9 +309,9 @@ void loop() {
   sensors.measure();
 
   // Forward Data
-  if (VERBOSE && !device.has_display) sensors.printValues(); // May be BLOCKING!
+  if (VERBOSE && !device.has_display)    sensors.printValues(); // May be BLOCKING!
   if (screenAwake && device.has_display) sensors.updateGraphs();
-  if (device.has_wifi) addSampleAndAutoSend();
+  if (wifiAvailable && device.has_wifi)  addSampleAndAutoSend();
 
   // Screen power management
   if (device.has_display) {
