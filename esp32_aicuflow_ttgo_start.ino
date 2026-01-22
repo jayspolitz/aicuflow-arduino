@@ -37,6 +37,7 @@
 #include "aicuflow_logo_64px.h" // aicuflow_logo
 #include "aicuflow_logo_wide.h" // aicuflow_logo_wide
 #include "ScrollingGraph.h"
+#include "SensorMeasurement.h"
 
 const char* WLAN_SSID = "your-wlan";
 const char* WLAN_PASS = "your-pass";
@@ -56,123 +57,58 @@ static bool screenAwake = true;
 
 const auto& device = getDeviceProps();
 TFT_eSPI tft = TFT_eSPI();
-ScrollingGraph rightButtonGraph(&tft);
-ScrollingGraph leftButtonGraph(&tft);
-ScrollingGraph rssiGraph(&tft);
-ScrollingGraph voltageGraph(&tft);
-ScrollingGraph tempGraph(&tft);
-ScrollingGraph heapGraph(&tft);
 int screenWidth, screenHeight;
 
 WiFiClientSecure client;
-AicuClient aicu("https://prod-backend.aicuflow.com", VERBOSE);
+SensorMeasurement sensors(DEVICE_ID);
 
 /**
  *  Function definitions
 */
 
 // json collect & stream, dtype
-struct Sample {
-    int64_t t;
-    double T, U;
-    int B_L, B_R;
-    int P, n;
-    uint32_t N;
-    unsigned long i;
-};
-static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2); // est. data size + buffer
+static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2);
 static JsonArray arr;
 static uint16_t count = 0;
 static int32_t PERIOD_US = MEASURE_DELAY_MS * 1000UL;
-
 void initPoints() {
-    points.clear();
-    arr = points.to<JsonArray>();
-    count = 0;
+  points.clear();
+  arr = points.to<JsonArray>();
+  count = 0;
 }
 
-inline void addSample(const Sample &s) {
-    JsonObject o = arr.createNestedObject();
-    o["millis"] = s.t;
-    o["device"] = DEVICE_ID;
-    o["temperature"] = s.T;
-    o["voltage"] = s.U;
-    o["left_button"] = s.B_L;
-    o["right_button"] = s.B_R;
-    o["rssi"] = s.P;
-    o["heapfree"] = s.n;
-    o["cpu_freq_hz"] = s.N;
-    o["cpu_speed"] = s.i;
-}
-
-// async queue
+// Async queue for sending
 struct JsonBatch { DynamicJsonDocument* doc; };
 QueueHandle_t flushQueue;
 void flushSamplesAsync() {
-    if (count == 0) return;
+  if (count == 0) return;
 
-    DynamicJsonDocument* batch = new DynamicJsonDocument(points.memoryUsage() + 384*POINTS_BATCH_SIZE*2);
-    *batch = points; // deep copy
-    JsonBatch jb = {batch};
-    if (xQueueSend(flushQueue, &jb, 0) != pdTRUE) {
-        delete batch; // drop if queue full
-    }
+  DynamicJsonDocument* batch = new DynamicJsonDocument(points.memoryUsage() + 384*POINTS_BATCH_SIZE*2);
+  *batch = points; // deep copy
+  JsonBatch jb = {batch};
+  if (xQueueSend(flushQueue, &jb, 0) != pdTRUE) {
+    delete batch; // drop if queue full
+  }
 
-    points.clear();
-    arr = points.to<JsonArray>();
-    count = 0;
+  points.clear();
+  arr = points.to<JsonArray>();
+  count = 0;
 }
-inline void addSampleAndAutoSend(const Sample &s) {
-    addSample(s);
-    if (++count >= POINTS_BATCH_SIZE)flushSamplesAsync();
+void addSampleAndAutoSend() {
+  JsonObject o = arr.createNestedObject();
+  sensors.toJson(o);
+  if (++count >= POINTS_BATCH_SIZE) flushSamplesAsync();
 }
 void sendTask(void* parameter) {
   // async Send Task (Core 1 on ESP32)
   // this is used so we don't see the graph stutter
   JsonBatch jb;
   for (;;) {
-      if (xQueueReceive(flushQueue, &jb, portMAX_DELAY) == pdTRUE) {
-          aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, *jb.doc);
-          delete jb.doc; // free memory
-      }
+    if (xQueueReceive(flushQueue, &jb, portMAX_DELAY) == pdTRUE) {
+      aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, *jb.doc);
+      delete jb.doc; // free memory
+    }
   }
-}
-
-// graphing
-void initGraphs() {
-  tft.println("Measuring...");
-  int barheight = 14;
-  if (device.kind_slug == "lilygo-t-display-s3") barheight = 22;
-  int bargap = 3;
-  if (device.kind_slug == "lilygo-t-display-s3") bargap = 5;
-  int fullheight = barheight + bargap;
-  // .begin(x, y, width, height, min, max, color, label)
-  rightButtonGraph.begin(0, screenHeight-fullheight*6,  screenWidth, barheight, 0, 1, TFT_BLUE, "Button");
-  leftButtonGraph.begin(0, screenHeight-fullheight*5,  screenWidth, barheight, 0, 1, TFT_PURPLE, "Button");
-  rssiGraph.begin(0, screenHeight-fullheight*4,  screenWidth, barheight, -100, -30, TFT_GREEN, "RSSI");
-  voltageGraph.begin(0, screenHeight-fullheight*3,  screenWidth, barheight, 20, 60,   TFT_RED, "Voltage (V)");
-  tempGraph.begin(0, screenHeight-fullheight*2,  screenWidth, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
-  heapGraph.begin(0, screenHeight-fullheight*1,  screenWidth, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
-}
-void updateGraphs(const Sample &s) {
-    rightButtonGraph.update(s.B_R);
-    leftButtonGraph.update(s.B_L);
-    rssiGraph.update(s.P);
-    voltageGraph.update(s.U);
-    tempGraph.update(s.T);
-    heapGraph.update(s.n);
-}
-inline void printSampledValues(const Sample &s) {
-  Serial.print("Millis start: "); Serial.println(s.t);
-  Serial.print("Right Button: "); Serial.println(s.B_R);
-  Serial.print("Left Button: "); Serial.println(s.B_L);
-  Serial.print("Wifi RSSI: "); Serial.println(s.P);
-  Serial.print("Chip Voltage: "); Serial.println(s.U);
-  Serial.print("Chip Temp (°C): "); Serial.println(s.T);
-  Serial.print("Free Memory: "); Serial.println(s.n);
-  Serial.print("CPU Freq Hz: "); Serial.println(s.N);
-  Serial.print("Loops/10ms: "); Serial.println(1.0*s.i/10);
-  Serial.println("========");
 }
 
 // initing
@@ -201,16 +137,16 @@ void initDeviceGPIOPins() {
 }
 void initSerial() {
   Serial.begin(115200);
-  while (!Serial && millis() < 5000) delay(10);
-  Serial.println("Hello World!");
+  while (!Serial && millis() < 2000) delay(10);
+  if (VERBOSE) Serial.println("Hello World!");
   delay(500);
   Serial.print("Aicuflow booted on "); Serial.print(device.kind_slug); Serial.println("!");
 }
 void initTFTScreen() {
   screenWidth  = tft.width();
   screenHeight = tft.height();
-  Serial.print("Width: "); Serial.println(screenWidth);   // ttgo-t1: 135 
-  Serial.print("Height: "); Serial.println(screenHeight); // ttgo-t1: 240
+  if (VERBOSE) Serial.print("Width: "); Serial.println(screenWidth);   // ttgo-t1: 135 
+  if (VERBOSE) Serial.print("Height: "); Serial.println(screenHeight); // ttgo-t1: 240
   tft.init();
   
   pinMode(TFT_BL, OUTPUT);
@@ -220,32 +156,31 @@ void initTFTScreen() {
 
 // tft display screens
 void bootScreen(int duration=1000) {
-    tft.setRotation(0); // vertical
-    tft.setCursor(0, 0);
-    tft.fillScreen(TFT_BLACK); // aicu logo
-    tft.pushImage(screenWidth/2-126/2, screenHeight/2-14, 126, 28, aicuflow_logo_wide);
-    delay(duration);
+  tft.setRotation(0); // vertical
+  tft.setCursor(0, 0);
+  tft.fillScreen(TFT_BLACK); // aicu logo
+  tft.pushImage(screenWidth/2-126/2, screenHeight/2-14, 126, 28, aicuflow_logo_wide);
+  delay(duration);
 }
-
 void plotScreen(int duration=1000) {
-    tft.setRotation(0); // vertical
-    tft.setCursor(0, 0);
-    tft.fillScreen(TFT_BLACK); // aicu logo
-    int topoffset = 0;
-    if (device.kind_slug == "lilygo-t-display-s3") topoffset = 6;
-    tft.pushImage(screenWidth/2-126/2, topoffset, 126, 28, aicuflow_logo_wide);
-    tft.setCursor(0, 32);
-    if (device.kind_slug == "lilygo-t-display-s3") tft.println("");
-    tft.setTextSize(1);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK); // details
-    tft.println("Aicu IoT-AI Endpoint");
-    tft.println("https://aicuflow.com");
-    tft.println("");
-    tft.println("");
-    tft.println("Device started...");
-    delay(duration);
+  tft.setRotation(0); // vertical
+  tft.setCursor(0, 0);
+  tft.fillScreen(TFT_BLACK); // aicu logo
+  int topoffset = (device.kind_slug == "lilygo-t-display-s3") ? 6 : 0;
+  tft.pushImage(screenWidth/2-126/2, topoffset, 126, 28, aicuflow_logo_wide);
+  tft.setCursor(0, 32);
+  if (device.kind_slug == "lilygo-t-display-s3") tft.println("");
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK); // details
+  tft.println("Aicu IoT-AI Endpoint");
+  tft.println("https://aicuflow.com");
+  tft.println("");
+  tft.println("");
+  tft.println("Device started...");
+  delay(duration);
 }
 
+// connecting
 void connectWifiBlocking() {
   if (device.has_display) tft.print("Connecting to wifi");
   WiFi.begin(WLAN_SSID, WLAN_PASS);
@@ -268,7 +203,6 @@ void connectWifiBlocking() {
   Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
   delay(500);
 }
-
 void connectAPI() {
   if (device.has_display) tft.println("Connecting API...");
 
@@ -282,6 +216,63 @@ void connectAPI() {
   }
 }
 
+void registerAllSensors() {
+  // registerSensor(key, label, readFunc, min, max, color, enabled, showGraph)
+  sensors.registerSensor("left_button", "Button L", 
+    [&]() { return digitalRead(BUTTON_L) == 0 ? 1.0 : 0.0; },
+    0, 1, TFT_PURPLE, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("right_button", "Button R",
+    [&]() { return digitalRead(BUTTON_R) == 0 ? 1.0 : 0.0; },
+    0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
+  if (device.has_wifi) sensors.registerSensor("rssi", "RSSI (dBm)",
+    []() { return (double)WiFi.RSSI(); },
+    -100, -30, TFT_GREEN, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("voltage", "Voltage (V)", // 2=ResDiv;3.3RefV;4095-12-bitADCres
+    []() { return (analogRead(34)/4095.0)*2.0*3.3*1.1; },
+    2.0, 6.0, TFT_RED, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("temperature", "Temp (°C)",
+    []() { return temperatureRead(); },
+    20, 60, TFT_ORANGE, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("heapfree", "Heap (KB)",
+    []() { return ESP.getFreeHeap() / 1024.0; },
+    100, 300, TFT_CYAN, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("cpu_freq_hz", "CPU (MHz)",
+    []() { return (double)getCpuFrequencyMhz(); },
+    80, 240, TFT_YELLOW, LOG_SEND, HIDE_GRAPH);
+  
+  // More sensors?
+  // Ex1) Custom analog sensor
+  // sensors.registerSensor("light", "Light",
+  //  []() { return analogRead(35) / 4095.0 * 100; },
+  //  0, 100, TFT_WHITE, LOG_SEND, SHOW_GRAPH);
+  
+  // Ex2) Not graphed sensor
+  // sensors.registerSensor("uptime", "Uptime (s)",
+  //  []() { return millis() / 1000.0; },
+  //  0, 86400, TFT_MAGENTA, LOG_SEND, HIDE_GRAPH);
+  
+  // Ex3) Disabled sensor
+  // sensors.registerSensor("unused", "Unused",
+  //  []() { return 0.0; },
+  //  0, 1, TFT_WHITE, LOG_NONE, HIDE_GRAPH);
+
+  if (VERBOSE) {
+    Serial.print("Registered sensors: ");
+    Serial.println(sensors.getEnabledCount());
+  }
+}
+void initSensorGraphs() {
+  if (device.kind_slug == "lilygo-t-display-s3")
+    sensors.setGraphSpacing(22, 5);
+  else sensors.setGraphSpacing(14, 3);
+  tft.println("Measuring...");
+  sensors.initGraphs(&tft, screenWidth, screenHeight);
+  if (VERBOSE) {
+    Serial.print("Graphed sensors: ");
+    Serial.println(sensors.getGraphCount());
+  }
+}
+
 /**
  *  Aicuflow x Arduino Setup & Loop
 */
@@ -291,13 +282,16 @@ void setup() {
   initDeviceGPIOPins();
   initSerial();
   
-  if (!device.has_display) delay(5000);
+  if (!device.has_display) delay(1000);
   if (device.has_display)  initTFTScreen();
-  if (device.has_display)  bootScreen(5000);
+  if (device.has_display)  bootScreen(3000);
   if (device.has_display)  plotScreen(1000);
   if (device.has_wifi)     connectWifiBlocking();
   if (device.has_wifi)     connectAPI();
-  if (device.has_display)  initGraphs();
+
+  registerAllSensors();
+  if (device.has_display)  initSensorGraphs();
+  
   if (device.has_wifi) {
     flushQueue = xQueueCreate(8, sizeof(JsonBatch));
     xTaskCreatePinnedToCore(sendTask, "sendTask", 8192, NULL, 1, NULL, 1);
@@ -305,44 +299,31 @@ void setup() {
 }
 
 void loop() {
-  // Precise timing periods
+  // Precise time
   static uint32_t next = micros();
   uint32_t now = micros();
   if ((int32_t)(now - next) < 0) return;
   next += PERIOD_US;
 
   // Measure Data
-  Sample s;
-  s.U   = (analogRead(34)/4095.0)*2.0*3.3*1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
-  s.T   = temperatureRead();
-  s.B_L = digitalRead(BUTTON_L) == 0;
-  s.B_R = digitalRead(BUTTON_R) == 0;
-  s.P   = WiFi.RSSI();
-  s.n   = ESP.getFreeHeap();
-  s.N   = getCpuFrequencyMhz();
-  s.t   = millis();
-  unsigned long i = 0;
-  while (millis() - s.t < 10) i++;
-  s.i   = i;
+  sensors.measure();
 
   // Forward Data
-  //if (VERBOSE)        printSampledValues(s); // May be BLOCKING!
-  if (screenAwake && device.has_display)
-                        updateGraphs(s);
-  if (device.has_wifi)  addSampleAndAutoSend(s);
+  if (VERBOSE && !device.has_display) sensors.printValues(); // May be BLOCKING!
+  if (screenAwake && device.has_display) sensors.updateGraphs();
+  if (device.has_wifi) addSampleAndAutoSend();
 
-  // Device State
+  // Screen power management
   if (device.has_display) {
-    // screen timeout & wake
-    bool anyInput = s.B_L || s.B_R;
+    bool anyInput = sensors.getValue("left_button") || sensors.getValue("right_button");
     if (anyInput) {
       lastInputMs = millis();
       if (!screenAwake) {
         digitalWrite(TFT_BL, HIGH); // screen on
         screenAwake = true;
       }
-    } if (screenAwake && (millis() - lastInputMs > SCREEN_IDLE_MS)) {
-      digitalWrite(TFT_BL, LOW);   // screen off
+    } else if (screenAwake && (millis() - lastInputMs > SCREEN_IDLE_MS)) {
+      digitalWrite(TFT_BL, LOW); // screen off
       screenAwake = false;
     }
   }
