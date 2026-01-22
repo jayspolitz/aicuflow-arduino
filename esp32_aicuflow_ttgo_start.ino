@@ -81,6 +81,7 @@ struct Sample {
 static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2); // est. data size + buffer
 static JsonArray arr;
 static uint16_t count = 0;
+static int32_t PERIOD_US = MEASURE_DELAY_MS * 1000UL;
 
 void initPoints() {
     points.clear();
@@ -276,7 +277,11 @@ void setup() {
 }
 
 void loop() {
-  delay(MEASURE_DELAY_MS); // Buffer
+  // Precise timing periods
+  static uint32_t next = micros();
+  uint32_t now = micros();
+  if ((int32_t)(now - next) < 0) return;
+  next += PERIOD_US;
 
   // Measure Data
   Sample s;
