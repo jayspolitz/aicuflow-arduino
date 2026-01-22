@@ -53,6 +53,7 @@ const int MEASURE_DELAY_MS = 100;
 int BUTTON_L, BUTTON_R;
 const int SCREEN_IDLE_MS = 30000; // also needs TFT_BL eg 38
 static uint32_t lastInputMs = 0;
+const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
 static bool screenAwake = true;
 static bool wifiAvailable = false;
 
@@ -61,6 +62,7 @@ TFT_eSPI tft = TFT_eSPI();
 int screenWidth, screenHeight;
 
 WiFiClientSecure client;
+AicuClient aicu("https://dev-backend.aicuflow.com", VERBOSE);
 SensorMeasurement sensors(DEVICE_ID);
 
 /**
@@ -182,17 +184,39 @@ void plotScreen(int duration=1000) {
 }
 
 // connecting
-void connectWifiBlocking() {
+void connectWifiOrTimeout() {
   if (device.has_display) tft.print("Connecting to wifi");
+
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WLAN_SSID, WLAN_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
+
+  // try to connect (until timeout)
+  unsigned long start = millis();
+  while (
+    (WiFi.status() != WL_CONNECTED) // not connected
+    && (!WIFI_TIMEOUT || (millis() - start < WIFI_TIMEOUT)) // timeout
+  ) {
     delay(500);
     if (device.has_display) tft.print("."); // Loading progress
   }
 
+  // no connection = off
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    wifiAvailable = false;
+    tft.print("\n");
+    tft.println("No wifi connection!");
+    return;
+  } else { // connected = on
+    wifiAvailable = true;
+  }
+
+  // set up wifi stuff
   client.setInsecure(); // TLS workaround
   aicu.setWiFiClient(&client);
   
+  // print
   if (wifiAvailable && device.has_display) {
     tft.print("\n");
     tft.println("WiFi Connected!");
@@ -286,7 +310,7 @@ void setup() {
   if (device.has_display)  initTFTScreen();
   if (device.has_display)  bootScreen(3000);
   if (device.has_display)  plotScreen(1000);
-  if (device.has_wifi)     connectWifiBlocking();
+  if (device.has_wifi)     connectWifiOrTimeout();
   if (device.has_wifi && wifiAvailable) connectAPI();
 
   registerAllSensors();
@@ -314,7 +338,7 @@ void loop() {
   if (wifiAvailable && device.has_wifi)  addSampleAndAutoSend();
 
   // Screen power management
-  if (device.has_display) {
+  if (device.has_display && SCREEN_IDLE_MS) {
     bool anyInput = sensors.getValue("left_button") || sensors.getValue("right_button");
     if (anyInput) {
       lastInputMs = millis();
