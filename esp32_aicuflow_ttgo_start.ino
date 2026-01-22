@@ -136,7 +136,7 @@ void initGPIOPins() {
 }
 void initSerial() {
   Serial.begin(115200);
-  while (!Serial) {}
+  while (!Serial && millis() < 5000) delay(10);
   Serial.println("Hello World!");
   delay(500);
   Serial.print("Aicuflow booted on "); Serial.print(device.kind_slug); Serial.println("!");
