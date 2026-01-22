@@ -4,7 +4,11 @@ Connect to [aicuflow](https://aicuflow.com) using an ESP-32 or similar Microcont
 
 See [documentation](https://aicuflow.com/docs/library/arduino)
 
-## TFT Setup
+## Loader mode of Lilygo T-Display S3
+
+Can't find its serial port? Long press left, keep, short click sidebutton.
+
+## TFT Setup for ttgo t1
 
 ```cpp
 // TFT_eSPI: Needs modifications under Arduino/libraries/TFT_eSPI/User_Setup_Select.h:
