@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 #include <stdint.h>
 
 enum class DeviceFamily : uint8_t {

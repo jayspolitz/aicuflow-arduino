@@ -1,79 +1,66 @@
-#include <TFT_eSPI.h>
+#include "ScrollingGraph.h"
 
-class ScrollingGraph {
-  private:
-    TFT_eSprite spr;
-    int _x, _y, _w, _h;
-    uint16_t _color;
-    const char* _label;
+ScrollingGraph::ScrollingGraph(TFT_eSPI* tft) : spr(tft), _count(0) {}
 
-    float* _values;
-    int _count = 0;
+void ScrollingGraph::begin(int x, int y, int w, int h,
+            float /*minVal*/, float /*maxVal*/,
+            uint16_t color, const char* label) {
+  _x = x; _y = y; _w = w; _h = h;
+  _color = color; _label = label;
 
-  public:
-    ScrollingGraph(TFT_eSPI* tft) : spr(tft) {}
+  spr.createSprite(w, h);
+  spr.fillSprite(TFT_BLACK);
 
-    // min/max kept as dummies for API compatibility
-    void begin(int x, int y, int w, int h,
-               float /*minVal*/, float /*maxVal*/,
-               uint16_t color, const char* label) {
-      _x = x; _y = y; _w = w; _h = h;
-      _color = color; _label = label;
+  _values = (float*)malloc(sizeof(float) * w);
+  _count = 0;
+}
 
-      spr.createSprite(w, h);
-      spr.fillSprite(TFT_BLACK);
+void ScrollingGraph::update(float val) {
+  // shift value buffer
+  if (_count < _w) {
+    _values[_count++] = val;
+  } else {
+    memmove(_values, _values + 1, sizeof(float) * (_w - 1));
+    _values[_w - 1] = val;
+  }
 
-      _values = (float*)malloc(sizeof(float) * w);
-      _count = 0;
-    }
+  // compute autoscale from buffer
+  float minV = _values[0];
+  float maxV = _values[0];
+  for (int i = 1; i < _count; i++) {
+    if (_values[i] < minV) minV = _values[i];
+    if (_values[i] > maxV) maxV = _values[i];
+  }
 
-    void update(float val) {
-      // shift value buffer
-      if (_count < _w) {
-        _values[_count++] = val;
-      } else {
-        memmove(_values, _values + 1, sizeof(float) * (_w - 1));
-        _values[_w - 1] = val;
-      }
+  float range = maxV - minV;
+  if (range < 1e-6f) range = 1e-6f;
 
-      // compute autoscale from buffer
-      float minV = _values[0];
-      float maxV = _values[0];
-      for (int i = 1; i < _count; i++) {
-        if (_values[i] < minV) minV = _values[i];
-        if (_values[i] > maxV) maxV = _values[i];
-      }
+  // redraw everything
+  spr.fillSprite(TFT_BLACK);
 
-      float range = maxV - minV;
-      if (range < 1e-6f) range = 1e-6f;
+  for (int x = 1; x < _count; x++) {
+    int y0 = map(
+      _values[x - 1] * 1000,
+      minV * 1000,
+      maxV * 1000,
+      _h - 1,
+      0
+    );
+    int y1 = map(
+      _values[x] * 1000,
+      minV * 1000,
+      maxV * 1000,
+      _h - 1,
+      0
+    );
 
-      // redraw everything
-      spr.fillSprite(TFT_BLACK);
+    if (y0 < 0) y0 = 0;
+    if (y0 >= _h) y0 = _h - 1;
+    if (y1 < 0) y1 = 0;
+    if (y1 >= _h) y1 = _h - 1;
 
-      for (int x = 1; x < _count; x++) {
-        int y0 = map(
-          _values[x - 1] * 1000,
-          minV * 1000,
-          maxV * 1000,
-          _h - 1,
-          0
-        );
-        int y1 = map(
-          _values[x] * 1000,
-          minV * 1000,
-          maxV * 1000,
-          _h - 1,
-          0
-        );
+    spr.drawLine(x - 1, y0, x, y1, _color);
+  }
 
-        if (y0 < 0) y0 = 0;
-        if (y0 >= _h) y0 = _h - 1;
-        if (y1 < 0) y1 = 0;
-        if (y1 >= _h) y1 = _h - 1;
-
-        spr.drawLine(x - 1, y0, x, y1, _color);
-      }
-
-      spr.pushSprite(_x, _y);
-    }
-};
+  spr.pushSprite(_x, _y);
+}

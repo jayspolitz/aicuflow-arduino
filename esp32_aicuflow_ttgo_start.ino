@@ -7,6 +7,8 @@
  *  Just provide credentials, and all available sensor data is sent.
  *  If the device has a display, it is detected and filled with charts.
  *
+ *  Library TFT_eSPI needs Customizing before, sorry! check README.
+ *
  *  Tested devices:
  *  - ESP32 ttgo t1 (display);
  *  - liligo t3 s3 t-display (nerdminer case);
@@ -16,7 +18,8 @@
  */
 
 
-#include <TFT_eSPI.h> // v2.5.43 Bodmer
+#include "DeviceProps.h"
+#include <TFT_eSPI.h> // v2.5.43 Bodmer, needs customisation
 #include <SPI.h>
 
 #include <WiFi.h>
@@ -28,8 +31,7 @@
 #include "AicuClient.h"
 #include "aicuflow_logo_64px.h" // aicuflow_logo
 #include "aicuflow_logo_wide.h" // aicuflow_logo_wide
-#include "ScrollingGraph.cpp"
-#include "DeviceProps.h"
+#include "ScrollingGraph.h"
 
 const char* WLAN_SSID = "your-wlan";
 const char* WLAN_PASS = "your-pass";

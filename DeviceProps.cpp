@@ -1,5 +1,4 @@
 #include "DeviceProps.h"
-#include <Arduino.h>
 
 #if defined(ARDUINO_AVR_UNO)
 #define DEVICE_PROPS_INIT { \
@@ -43,12 +42,16 @@
   DeviceFamily::ESP32_S3, "lilygo-t-display-s3", \
   true,true,true,true,true,false,false,true, \
   320,170 }
+  // would be cool
+  //#include "DisplayT_S3.h"
 
 #elif defined(ARDUINO_TTGO_T1)
 #define DEVICE_PROPS_INIT { \
   DeviceFamily::ESP32, "esp32-ttgo-t1", \
   true,true,true,true,false,false,true,false, \
   128,64 }
+  // would be cool
+  //#include "DisplayTTGO.h"
 
 #elif defined(ARDUINO_ESP32_DEV) || defined(ARDUINO_ESP32_DEVKITC)
 #define DEVICE_PROPS_INIT { \
