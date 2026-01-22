@@ -50,6 +50,9 @@ const char* DEVICE_ID = "ttt1"; // ttgo (t1), esp32 t display s3
 const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
 int BUTTON_L, BUTTON_R;
+const int SCREEN_IDLE_MS = 30000; // also needs TFT_BL eg 38
+static uint32_t lastInputMs = 0;
+static bool screenAwake = true;
 
 const auto& device = getDeviceProps();
 TFT_eSPI tft = TFT_eSPI();
@@ -209,6 +212,10 @@ void initTFTScreen() {
   Serial.print("Width: "); Serial.println(screenWidth);   // ttgo-t1: 135 
   Serial.print("Height: "); Serial.println(screenHeight); // ttgo-t1: 240
   tft.init();
+  
+  pinMode(TFT_BL, OUTPUT);
+  digitalWrite(TFT_BL, HIGH); // screen on
+  lastInputMs = millis();
 }
 
 // tft display screens
@@ -319,7 +326,24 @@ void loop() {
   s.i   = i;
 
   // Forward Data
-  //if (VERBOSE)            printSampledValues(s); // May be BLOCKING!
-  if (device.has_display) updateGraphs(s);
-  if (device.has_wifi)    addSampleAndAutoSend(s);
+  //if (VERBOSE)        printSampledValues(s); // May be BLOCKING!
+  if (screenAwake && device.has_display)
+                        updateGraphs(s);
+  if (device.has_wifi)  addSampleAndAutoSend(s);
+
+  // Device State
+  if (device.has_display) {
+    // screen timeout & wake
+    bool anyInput = s.B_L || s.B_R;
+    if (anyInput) {
+      lastInputMs = millis();
+      if (!screenAwake) {
+        digitalWrite(TFT_BL, HIGH); // screen on
+        screenAwake = true;
+      }
+    } if (screenAwake && (millis() - lastInputMs > SCREEN_IDLE_MS)) {
+      digitalWrite(TFT_BL, LOW);   // screen off
+      screenAwake = false;
+    }
+  }
 }
