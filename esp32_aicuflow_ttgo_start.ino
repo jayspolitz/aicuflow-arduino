@@ -14,6 +14,11 @@
  *  - liligo t3 s3 t-display (nerdminer case);
  *  - ESP32 devkit c (no display, 2020 build with hall sensor);
  *
+ *  Features
+ *  - Wifi, if device has that
+ *  - Sensor data logging (TFT Screen)
+ *  - Non-blocking 2 Core execution (0 measures, 1 talks)
+ *
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
@@ -40,8 +45,9 @@ const char* AICU_PASS = "your-pass";
 const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
 const char* PROJ_FILE = "esp32.arrow";
 
+const int VERBOSE = true;
 const char* DEVICE_ID = "ttt1"; // ttgo (t1), esp32 t display s3
-const int POINTS_BATCH_SIZE = 256; // 64 always works
+const int POINTS_BATCH_SIZE = 128; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
 const int BUTTON_L = 0;
 const int BUTTON_R = 35;
@@ -55,43 +61,78 @@ ScrollingGraph voltageGraph(&tft);
 ScrollingGraph tempGraph(&tft);
 ScrollingGraph heapGraph(&tft);
 int screenWidth, screenHeight;
+
 WiFiClientSecure client;
-AicuClient aicu("https://prod-backend.aicuflow.com", true);
+AicuClient aicu("https://prod-backend.aicuflow.com", VERBOSE);
 
 /**
  *  Function definitions
 */
 
-// json collect & stream
+// json collect & stream, dtype
+struct Sample {
+    int64_t t;
+    double T, U;
+    int B_L, B_R;
+    int P, n;
+    uint32_t N;
+    unsigned long i;
+};
 static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2); // est. data size + buffer
 static JsonArray arr;
 static uint16_t count = 0;
+
 void initPoints() {
     points.clear();
     arr = points.to<JsonArray>();
     count = 0;
 }
-inline void addSampleAndAutoSend(int64_t t, double T, double U, int B_L, int B_R, int P, int n, int N, int i) {
-    JsonObject o = arr.createNestedObject();
-    o["millis"] = t;
-    o["device"] = DEVICE_ID;
-    o["temperature"] = T;
-    o["voltage"] = U;
-    o["left_button"] = B_L;
-    o["right_button"] = B_R;
-    o["rssi"] = P;
-    o["heapfree"] = n;
-    o["cpu_freq_hz"] = N;
-    o["cpu_speed"] = i;
 
-    if (++count >= POINTS_BATCH_SIZE) flushSamples();
+inline void addSample(const Sample &s) {
+    JsonObject o = arr.createNestedObject();
+    o["millis"] = s.t;
+    o["device"] = DEVICE_ID;
+    o["temperature"] = s.T;
+    o["voltage"] = s.U;
+    o["left_button"] = s.B_L;
+    o["right_button"] = s.B_R;
+    o["rssi"] = s.P;
+    o["heapfree"] = s.n;
+    o["cpu_freq_hz"] = s.N;
+    o["cpu_speed"] = s.i;
 }
-void flushSamples() {
+
+// async queue
+struct JsonBatch { DynamicJsonDocument* doc; };
+QueueHandle_t flushQueue;
+void flushSamplesAsync() {
     if (count == 0) return;
-    aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, points);
+
+    DynamicJsonDocument* batch = new DynamicJsonDocument(points.memoryUsage() + 384*POINTS_BATCH_SIZE*2);
+    *batch = points; // deep copy
+    JsonBatch jb = {batch};
+    if (xQueueSend(flushQueue, &jb, 0) != pdTRUE) {
+        delete batch; // drop if queue full
+    }
+
     points.clear();
     arr = points.to<JsonArray>();
     count = 0;
+}
+inline void addSampleAndAutoSend(const Sample &s) {
+    addSample(s);
+    if (++count >= POINTS_BATCH_SIZE)flushSamplesAsync();
+}
+void sendTask(void* parameter) {
+  // async Send Task (Core 1 on ESP32)
+  // this is used so we don't see the graph stutter
+  JsonBatch jb;
+  for (;;) {
+      if (xQueueReceive(flushQueue, &jb, portMAX_DELAY) == pdTRUE) {
+          aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, *jb.doc);
+          delete jb.doc; // free memory
+      }
+  }
 }
 
 // graphing
@@ -108,24 +149,24 @@ void initGraphs() {
   tempGraph.begin(0, screenHeight-fullheight*2,  135, barheight, 20, 60,   TFT_ORANGE, "Temp (C)");
   heapGraph.begin(0, screenHeight-fullheight*1,  135, barheight, 100, 300, TFT_CYAN, "Heap (KB)");
 }
-void updateGraphs(int B_R, int B_L, float P, float U, float T, int n) {
-    rightButtonGraph.update(B_R);
-    leftButtonGraph.update(B_L);
-    rssiGraph.update(P);
-    voltageGraph.update(U);
-    tempGraph.update(T);
-    heapGraph.update(n);
+void updateGraphs(const Sample &s) {
+    rightButtonGraph.update(s.B_R);
+    leftButtonGraph.update(s.B_L);
+    rssiGraph.update(s.P);
+    voltageGraph.update(s.U);
+    tempGraph.update(s.T);
+    heapGraph.update(s.n);
 }
-inline void printSampledValues(int64_t t, double T, double U, int B_L, int B_R, int P, int n, int N, int i) {
-  Serial.print("Millis start: "); Serial.println(t);
-  Serial.print("Right Button: "); Serial.println(B_R);
-  Serial.print("Left Button: "); Serial.println(B_L);
-  Serial.print("Wifi RSSI: "); Serial.println(P);
-  Serial.print("Chip Voltage: "); Serial.println(U);
-  Serial.print("Chip Temp (°C): "); Serial.println(T);
-  Serial.print("Free Memory: "); Serial.println(n);
-  Serial.print("CPU Freq Hz: "); Serial.println(N);
-  Serial.print("Loops/10ms: "); Serial.println(1.0*i/10);
+inline void printSampledValues(const Sample &s) {
+  Serial.print("Millis start: "); Serial.println(s.t);
+  Serial.print("Right Button: "); Serial.println(s.B_R);
+  Serial.print("Left Button: "); Serial.println(s.B_L);
+  Serial.print("Wifi RSSI: "); Serial.println(s.P);
+  Serial.print("Chip Voltage: "); Serial.println(s.U);
+  Serial.print("Chip Temp (°C): "); Serial.println(s.T);
+  Serial.print("Free Memory: "); Serial.println(s.n);
+  Serial.print("CPU Freq Hz: "); Serial.println(s.N);
+  Serial.print("Loops/10ms: "); Serial.println(1.0*s.i/10);
   Serial.println("========");
 }
 
@@ -228,24 +269,31 @@ void setup() {
   if (device.has_wifi)     connectWifiBlocking();
   if (device.has_wifi)     connectAPI();
   if (device.has_display)  initGraphs();
+  if (device.has_wifi) {
+    flushQueue = xQueueCreate(8, sizeof(JsonBatch));
+    xTaskCreatePinnedToCore(sendTask, "sendTask", 8192, NULL, 1, NULL, 1);
+  }
 }
 
 void loop() {
   delay(MEASURE_DELAY_MS); // Buffer
 
   // Measure Data
-  float U = (analogRead(34) / 4095.0) * 2.0 * 3.3 * 1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
-  float T = (temperatureRead());
-  int B_L = digitalRead(BUTTON_L) == 0;
-  int B_R = digitalRead(BUTTON_R) == 0;
-  float P = WiFi.RSSI();
-  int n = ESP.getFreeHeap();
-  uint32_t N = getCpuFrequencyMhz(); 
-  unsigned long t = millis();
+  Sample s;
+  s.U   = (analogRead(34)/4095.0)*2.0*3.3*1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
+  s.T   = temperatureRead();
+  s.B_L = digitalRead(BUTTON_L) == 0;
+  s.B_R = digitalRead(BUTTON_R) == 0;
+  s.P   = WiFi.RSSI();
+  s.n   = ESP.getFreeHeap();
+  s.N   = getCpuFrequencyMhz();
+  s.t   = millis();
   unsigned long i = 0;
-  while (millis() - t < 10) i++;
+  while (millis() - s.t < 10) i++;
+  s.i   = i;
 
   // Forward Data
-  if (device.has_display) updateGraphs(B_R, B_L, P, U, T, n);
-  if (device.has_wifi) addSampleAndAutoSend(t, T, U, B_L, B_R, P, n, N, i);
+  //if (VERBOSE)            printSampledValues(s); // May be BLOCKING!
+  if (device.has_display) updateGraphs(s);
+  if (device.has_wifi)    addSampleAndAutoSend(s);
 }
