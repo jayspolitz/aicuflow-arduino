@@ -4,6 +4,12 @@ Connect to [aicuflow](https://aicuflow.com) using an ESP-32 or similar Microcont
 
 See [documentation](https://aicuflow.com/docs/library/arduino)
 
+## Dev Quickstart
+
+1. Install Arduino IDE
+2. Install ESP32 Board in it
+3. Clone this Repo
+
 ## Loader mode of Lilygo T-Display S3
 
 Can't find its serial port? Long press left, keep, short click sidebutton.
@@ -24,3 +30,7 @@ Use `*.settings` instead.\
 Example: `device1.settings`
 
 And then copy these settings contents into your sketch to proceed, instead of committing.
+
+## Contributing?
+
+Check [documentation](https://aicuflow.com/docs/library/arduino) and contact [Finn](https://github.com/finnmglas)
