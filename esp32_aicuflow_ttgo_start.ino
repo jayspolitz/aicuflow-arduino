@@ -143,7 +143,8 @@ void initDeviceGPIOPins() {
   }
 }
 void initSerial() {
-  Serial.begin(115200);
+  Serial.begin(115200); // Serial.begin(0); would try to detect
+  // if (Serial.baudRate() == 0) // no rate detected
   while (!Serial && millis() < 2000) delay(10);
   if (VERBOSE) Serial.println("Hello World!");
   delay(500);
