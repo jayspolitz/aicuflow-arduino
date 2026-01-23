@@ -39,7 +39,7 @@
 #include "ScrollingGraph.h"
 #include "SensorMeasurement.h"
 
-//#settings
+//#settings: empty, REPLACE THIS
 const char* WLAN_SSID = "your-wlan";
 const char* WLAN_PASS = "your-pass";
 const char* AICU_USER = "your-mail";
@@ -48,24 +48,27 @@ const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
 const char* PROJ_FILE = "esp32.arrow";
 
 const int VERBOSE = true;
-const char* DEVICE_ID = "0"; // if you have multiple devices
+const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
+const char* DEVICE_ID = "aicu0"; // if you have multiple devices
 const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
-int BUTTON_L, BUTTON_R;
 const int SCREEN_IDLE_MS = 30000; // also needs TFT_BL eg 38
-static uint32_t lastInputMs = 0;
 const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
+//#endsettings: empty, REPLACE THIS
+
+// globals
+WiFiClientSecure client;
+AicuClient aicu(API_URL, VERBOSE);
+TFT_eSPI tft = TFT_eSPI();
+SensorMeasurement sensors(DEVICE_ID);
+
+const auto& device = getDeviceProps();
+int screenWidth, screenHeight;
+int BUTTON_L, BUTTON_R;
+static uint32_t lastInputMs = 0;
 static bool screenAwake = true;
 static bool wifiAvailable = false;
 
-const auto& device = getDeviceProps();
-TFT_eSPI tft = TFT_eSPI();
-int screenWidth, screenHeight;
-
-WiFiClientSecure client;
-AicuClient aicu("https://dev-backend.aicuflow.com", VERBOSE);
-SensorMeasurement sensors(DEVICE_ID);
-//#endsettings
 
 /**
  *  Function definitions

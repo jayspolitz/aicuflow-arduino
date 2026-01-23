@@ -20,7 +20,7 @@ Can't find its serial port? Long press left, keep, short click sidebutton.
 
 ## Do not commit your device settings
 
-Use `*.settings.ino` instead.\
-Example: `device1.settings.ino`
+Use `*.settings.cpp` instead.\
+Example: `device1.settings.cpp`
 
 And then copy these settings contents into your sketch to proceed, instead of committing.
