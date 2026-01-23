@@ -1,5 +1,4 @@
 #pragma once
-#include "DeviceProps.h"
 #include <TFT_eSPI.h>
 
 class ScrollingGraph {

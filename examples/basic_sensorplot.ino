@@ -7,7 +7,7 @@
  */
 
 #include <TFT_eSPI.h>
-#include "SensorMeasurement.h"
+#include "sensors/SensorMeasurement.cpp"
 
 bool isTDisplayS3 = true;
 int leftButton = 0;

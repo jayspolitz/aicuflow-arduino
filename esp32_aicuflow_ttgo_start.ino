@@ -23,7 +23,6 @@
  */
 
 
-#include "DeviceProps.h"
 #include <TFT_eSPI.h> // v2.5.43 Bodmer, needs customisation
 #include <SPI.h>
 
@@ -33,11 +32,11 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h> // 7.4.2 by Benoit
 
-#include "AicuClient.h"
-#include "aicuflow_logo_64px.h" // aicuflow_logo
-#include "aicuflow_logo_wide.h" // aicuflow_logo_wide
-#include "ScrollingGraph.h"
-#include "SensorMeasurement.h"
+#include "device/DeviceProps.cpp"
+#include "aicuflow/AicuClient.cpp"
+#include "sensors/SensorMeasurement.cpp"
+#include "graphics/aicuflow_logo_64px.h" // aicuflow_logo
+#include "graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
 
 //#settings: empty, REPLACE THIS
 const char* WLAN_SSID = "your-wlan";

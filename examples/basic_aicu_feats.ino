@@ -14,7 +14,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
-#include "AicuClient.h"
+#include "aicuflow/AicuClient.cpp"
 
 const char* AICU_USER = "your-user";
 const char* AICU_PASS = "your-pass";

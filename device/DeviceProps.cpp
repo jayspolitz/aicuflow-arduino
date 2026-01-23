@@ -1,4 +1,4 @@
-#include "DeviceProps.h"
+#include "device/DeviceProps.h"
 
 #if defined(ARDUINO_AVR_UNO)
 #define DEVICE_PROPS_INIT { \
