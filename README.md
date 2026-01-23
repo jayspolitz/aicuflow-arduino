@@ -17,3 +17,10 @@ Can't find its serial port? Long press left, keep, short click sidebutton.
 //   COMMENT THIS out in that file:
 //   #include <User_Setup.h>           // Default setup is root library folder
 ```
+
+## Do not commit your device settings
+
+Use `*.settings.ino` instead.\
+Example: `device1.settings.ino`
+
+And then copy these settings contents into your sketch to proceed, instead of committing.

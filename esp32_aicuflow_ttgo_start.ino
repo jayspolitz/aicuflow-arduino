@@ -39,6 +39,7 @@
 #include "ScrollingGraph.h"
 #include "SensorMeasurement.h"
 
+//#settings
 const char* WLAN_SSID = "your-wlan";
 const char* WLAN_PASS = "your-pass";
 const char* AICU_USER = "your-mail";
@@ -47,7 +48,7 @@ const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
 const char* PROJ_FILE = "esp32.arrow";
 
 const int VERBOSE = true;
-const char* DEVICE_ID = "ttt1"; // ttgo (t1), esp32 t display s3
+const char* DEVICE_ID = "0"; // if you have multiple devices
 const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
 int BUTTON_L, BUTTON_R;
@@ -64,6 +65,7 @@ int screenWidth, screenHeight;
 WiFiClientSecure client;
 AicuClient aicu("https://dev-backend.aicuflow.com", VERBOSE);
 SensorMeasurement sensors(DEVICE_ID);
+//#endsettings
 
 /**
  *  Function definitions
