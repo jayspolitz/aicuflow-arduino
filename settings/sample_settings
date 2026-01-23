@@ -1,0 +1,17 @@
+// Copy to main ino if not there yet
+//#settings: empty, REPLACE THIS
+const char* WLAN_SSID = "your-wlan";
+const char* WLAN_PASS = "your-pass";
+const char* AICU_USER = "your-mail";
+const char* AICU_PASS = "your-pass";
+const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
+const char* PROJ_FILE = "esp32.arrow";
+
+const int VERBOSE = true;
+const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
+const char* DEVICE_ID = "aicu0"; // if you have multiple devices
+const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
+const int MEASURE_DELAY_MS = 100;
+const int SCREEN_IDLE_MS = 30000; // also needs TFT_BL eg 38
+const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
+//#endsettings: empty, REPLACE THIS

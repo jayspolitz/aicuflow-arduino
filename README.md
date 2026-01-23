@@ -9,6 +9,7 @@ See [documentation](https://aicuflow.com/docs/library/arduino)
 1. Install Arduino IDE
 2. Install ESP32 Board in it
 3. Clone this Repo
+4. Open in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 
 ## Loader mode of Lilygo T-Display S3
 
