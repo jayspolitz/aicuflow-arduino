@@ -1,6 +1,11 @@
 #pragma once
 #include <TFT_eSPI.h>
 
+// fallback to have tft backlight pin even if stuff is not defined
+#ifndef TFT_BL
+#define TFT_BL 42
+#endif
+
 class ScrollingGraph {
 private:
   TFT_eSprite spr;
