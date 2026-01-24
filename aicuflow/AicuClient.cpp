@@ -1,4 +1,5 @@
-#include "aicuflow/AicuClient.h"
+#include "AicuClient.h"
+// or #include "aicuflow/AicuClient.h"
 
 // ---- constructor ----
 AicuClient::AicuClient(const String& baseUrl, bool verbose)

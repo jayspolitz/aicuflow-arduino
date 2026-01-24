@@ -1,4 +1,5 @@
-#include "graphics/ScrollingGraph.h"
+#include "ScrollingGraph.h"
+// or #include "graphics/ScrollingGraph.h"
 
 ScrollingGraph::ScrollingGraph(TFT_eSPI* tft) : spr(tft), _count(0) {}
 

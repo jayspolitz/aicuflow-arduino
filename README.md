@@ -62,6 +62,10 @@ You need to customise `User_Setup_Select.h` file in the TFT_eSPI Library install
 
 Similar for the Adafruit T-Display. For other boards
 
+### Known issues and Fixes
+
+- **Compile error** with tft on non-tft devices containing `gpio_input_get` -> compile on arduino platform `esp32:esp32@2.0.17` instead of the default `3.1.0` (everything should work on there too, but imports are a bit different)
+
 ## Roadmap
 
 This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) is quite new. So lots to do.

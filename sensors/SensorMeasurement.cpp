@@ -5,8 +5,10 @@
  * Lightweight and flexible - all sensors registered from main sketch
  */
 
-#include "sensors/SensorMeasurement.h"
-#include "graphics/ScrollingGraph.cpp"
+#include "SensorMeasurement.h"
+// or #include "sensors/SensorMeasurement.h"
+#include "../graphics/ScrollingGraph.cpp"
+// or #include "graphics/ScrollingGraph.cpp"
 #include <TFT_eSPI.h>
 
 SensorMeasurement::SensorMeasurement(const char* deviceId) 

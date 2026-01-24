@@ -1,4 +1,5 @@
-#include "device/DeviceProps.h"
+#include "DeviceProps.h"
+// or #include "device/DeviceProps.h"
 
 #if defined(ARDUINO_AVR_UNO)
 #define DEVICE_PROPS_INIT { \
@@ -47,7 +48,7 @@
 
 #elif defined(ARDUINO_TTGO_T1)
 #define DEVICE_PROPS_INIT { \
-  DeviceFamily::ESP32, "esp32-ttgo-t1", \
+  DeviceFamily::ESP32_FAMILY, "esp32-ttgo-t1", \
   true,true,true,true,false,false,true,false, \
   128,64 }
   // would be cool
@@ -55,7 +56,7 @@
 
 #elif defined(ARDUINO_ESP32_DEV) || defined(ARDUINO_ESP32_DEVKITC)
 #define DEVICE_PROPS_INIT { \
-  DeviceFamily::ESP32, "esp32-devkitc", \
+  DeviceFamily::ESP32_FAMILY, "esp32-devkitc", \
   false,true,true,true,false,false,true,false, \
   0,0 }
 
@@ -79,7 +80,7 @@
 
 #elif defined(ESP32)
 #define DEVICE_PROPS_INIT { \
-  DeviceFamily::ESP32, "esp32-generic", \
+  DeviceFamily::ESP32_FAMILY, "esp32-generic", \
   false,true,true,true,false,false,true,false, \
   0,0 }
 
