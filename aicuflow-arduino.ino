@@ -35,6 +35,7 @@
 #include "library/device/DeviceProps.cpp"
 #include "library/aicuflow/AicuClient.cpp"
 #include "library/sensors/SensorMeasurement.cpp"
+#include "library/graphics/TFTMenu.cpp"
 #include "library/graphics/aicuflow_logo_64px.h" // aicuflow_logo
 #include "library/graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
 
@@ -67,6 +68,15 @@ int BUTTON_L, BUTTON_R;
 static uint32_t lastInputMs = 0;
 static bool screenAwake = true;
 static bool wifiAvailable = false;
+
+TFTMenu *mainMenu;
+TFTMenu *actionsMenu;
+TFTMenu *settingsMenu;
+enum Page {
+  PAGE_MENU,
+  PAGE_MEASURE
+};
+Page currentPage = PAGE_MENU;
 
 
 /**
@@ -186,6 +196,25 @@ void plotScreen(int duration=1000) {
   tft.println("");
   tft.println("Device started...");
   delay(duration);
+}
+void setupMenus() {
+  mainMenu = new TFTMenu(&tft, "Aicuflow Menu");
+  
+  actionsMenu = new TFTMenu(&tft, "Actions");
+  actionsMenu->addBackItem();
+  actionsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
+
+  settingsMenu = new TFTMenu(&tft, "Settings");
+  settingsMenu->addBackItem();
+  settingsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
+  
+  mainMenu->addItem("Start", openMeasurementPage);
+  mainMenu->addSubmenu("Actions", actionsMenu);
+  mainMenu->addSubmenu("Settings", settingsMenu);
+  
+  // after all propagate
+  mainMenu->propagateButtonPins(BUTTON_L, BUTTON_R);
+  mainMenu->begin();
 }
 
 // connecting
@@ -314,6 +343,14 @@ void setup() {
   if (!device.has_display) delay(1000);
   if (device.has_display)  initTFTScreen();
   if (device.has_display)  bootScreen(3000);
+
+  if (device.has_display)  setupMenus();
+  else                     openMeasurementPage();
+}
+
+void openMeasurementPage() {
+  currentPage = PAGE_MEASURE;
+
   if (device.has_display)  plotScreen(1000);
   if (device.has_wifi)     connectWifiOrTimeout();
   if (device.has_wifi && wifiAvailable) connectAPI();
@@ -326,8 +363,7 @@ void setup() {
     xTaskCreatePinnedToCore(sendTask, "sendTask", 8192, NULL, 1, NULL, 1);
   }
 }
-
-void loop() {
+void updateMeasurementPage() {
   // Precise time
   static uint32_t next = micros();
   uint32_t now = micros();
@@ -355,5 +391,14 @@ void loop() {
       digitalWrite(TFT_BL, LOW); // screen off
       screenAwake = false;
     }
+  }
+}
+
+void loop() {
+  if (currentPage == PAGE_MENU) {
+    mainMenu->update();
+    delay(20);
+  } else {
+    updateMeasurementPage();
   }
 }
