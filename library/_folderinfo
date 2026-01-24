@@ -1,0 +1,6 @@
+Aicuflow client library, contains all our stuff.
+
+- aicuflow = http api client library
+- device = device details autodetection
+- graphics = tft espi wrappers & helpers
+- sensors = datastruct to save & register sensors

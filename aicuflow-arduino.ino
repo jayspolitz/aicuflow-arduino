@@ -32,11 +32,11 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h> // 7.4.2 by Benoit
 
-#include "device/DeviceProps.cpp"
-#include "aicuflow/AicuClient.cpp"
-#include "sensors/SensorMeasurement.cpp"
-#include "graphics/aicuflow_logo_64px.h" // aicuflow_logo
-#include "graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
+#include "library/device/DeviceProps.cpp"
+#include "library/aicuflow/AicuClient.cpp"
+#include "library/sensors/SensorMeasurement.cpp"
+#include "library/graphics/aicuflow_logo_64px.h" // aicuflow_logo
+#include "library/graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
 
 //#settings: empty, REPLACE THIS
 const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
