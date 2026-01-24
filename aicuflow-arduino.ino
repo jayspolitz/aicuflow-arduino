@@ -1,7 +1,7 @@
 /**
  *  Aicuflow AI Flow Builder + Arduino ESP32 Quickstart
  *
- *  Created: 20260121, by Finn Glas @ AICU GmbH
+ *  Created: 20260121-24, by Finn Glas @ AICU GmbH
  *
  *  This sketch helps you stream data to the aicuflow platform easily.
  *  Just provide credentials, and all available sensor data is sent.
@@ -35,7 +35,7 @@
 #include "library/device/DeviceProps.cpp"
 #include "library/aicuflow/AicuClient.cpp"
 #include "library/sensors/SensorMeasurement.cpp"
-#include "library/graphics/TFTMenu.cpp"
+#include "library/graphics/TFTMenuModern.cpp"    // TFTMenuModern or TFTMenu
 #include "library/graphics/aicuflow_logo_64px.h" // aicuflow_logo
 #include "library/graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
 
@@ -198,7 +198,7 @@ void plotScreen(int duration=1000) {
   delay(duration);
 }
 void setupMenus() {
-  mainMenu = new TFTMenu(&tft, "Aicuflow Menu");
+  mainMenu = new TFTMenu(&tft, "Aicuflow IoT");
   
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
