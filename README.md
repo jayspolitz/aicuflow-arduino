@@ -24,9 +24,12 @@ For more details and examples, refer to our [documentation](https://aicuflow.com
 Or shorter:
 
 1. Install Arduino IDE
-2. Install ESP32 Board in it
-3. Clone this Repo
-4. Open in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
+2. Install ESP32 Board in it (official Espressif version)
+3. Install Libraries (Search in Arduino IDE)
+   - TFT_eSPI (needs setup)
+   - ArduinoJSON
+4. Clone this Repo
+5. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 
 ## Setup troubleshooting
 
@@ -34,7 +37,9 @@ Or shorter:
 
 Can't find its serial port? Long press left, keep, short click sidebutton.
 
-### TFT Setup for ttgo t1
+### TFT Setup
+
+You need to customise `User_Setup_Select.h` file in the TFT_eSPI Library installation. For esp32 ttgo t1:
 
 ```cpp
 // TFT_eSPI: Needs modifications under Arduino/libraries/TFT_eSPI/User_Setup_Select.h:
@@ -44,9 +49,47 @@ Can't find its serial port? Long press left, keep, short click sidebutton.
 //   #include <User_Setup.h>           // Default setup is root library folder
 ```
 
+Similar for the Adafruit T-Display. For other boards
+
+## Roadmap
+
+This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) is quite new. So lots to do.
+
+### Already working features
+
+- wifi connection with timeout
+- aicuflow api client with core endpoints and auth
+- aicuflow logo tft boot animation and screen timeout
+- automatic scrolling line graphs on tft display
+- simple sensor detection, measuring and chunked streaming
+
+### Planned features
+
+needed
+
+- more boards
+- automatic aicu session refreshing
+- user driveable menus & config
+- status indicators (wifi, power, ...)
+
+cool
+
+- multilingual mode
+- auto tft config
+- multi-wifi setup
+- automatic sensor plug and play (would be cool)
+- station mode to config using webserver
+- wifi monitoring as time series sensor
+- bluetooth phone integration
+- qr code render on tft?
+
+optional
+
+- configuration from [aicuflow platform](https://aicuflow.com/flows)
+
 ## Contributing
 
-Check the docs and talk to Finn about this.
+Check [documentation](https://aicuflow.com/docs/library/arduino) and talk to [Finn](https://github.com/finnmglas) about this
 
 ### Do not commit your device settings
 
@@ -54,7 +97,3 @@ Use `*.settings` instead.\
 Example: `device1.settings`
 
 And then copy these settings contents into your sketch to proceed, instead of committing.
-
-## Contributing?
-
-Check [documentation](https://aicuflow.com/docs/library/arduino) and contact [Finn](https://github.com/finnmglas)
