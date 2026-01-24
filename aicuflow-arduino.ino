@@ -39,12 +39,12 @@
 #include "graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
 
 //#settings: empty, REPLACE THIS
-const char* WLAN_SSID = "your-wlan";
+const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
 const char* WLAN_PASS = "your-pass";
-const char* AICU_USER = "your-mail";
+const char* AICU_USER = "your-mail"; // register at https://aicuflow.com/signup
 const char* AICU_PASS = "your-pass";
-const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
-const char* PROJ_FILE = "esp32.arrow";
+const char* PROJ_FLOW = "your-ai-cu-flow-uuid"; // create one at https://aicuflow.com
+const char* PROJ_FILE = "esp32.arrow"; // will be auto created
 
 const int VERBOSE = true;
 const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
