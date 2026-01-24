@@ -71,6 +71,7 @@ needed
 - automatic aicu session refreshing
 - user driveable menus & config
 - status indicators (wifi, power, ...)
+- publish library to arduino list
 
 cool
 
@@ -90,6 +91,22 @@ optional
 ## Contributing
 
 Check [documentation](https://aicuflow.com/docs/library/arduino) and talk to [Finn](https://github.com/finnmglas) about this
+
+### Simple process for clean code
+
+Write great code please!
+
+1. Clone repo and work with it
+2. Fork repo as contributor (or create a new branch `[name]/[feature-name]` as team member)
+3. Work on your branch!
+   - no breaking changes unless discussed
+   - no errors fails on supported devices!
+   - small, understandable commits only!
+   - do not break the library structure
+4. Get your code merged!
+   - no unreviewed merging of code to main
+
+Thanks!
 
 ### Do not commit your device settings
 
