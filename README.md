@@ -26,7 +26,7 @@ Or shorter:
 1. Install Arduino IDE
 2. Install ESP32 Board in it (official Espressif version)
 3. Install Libraries (Search in Arduino IDE)
-   - TFT_eSPI (needs setup)
+   - TFT_eSPI (needs setup, see TFT Setup below)
    - ArduinoJSON
 4. Clone this Repo
 5. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
@@ -50,7 +50,11 @@ Can't find its serial port? Long press left, keep, short click sidebutton.
 
 ### TFT Setup
 
-You need to customise `User_Setup_Select.h` file in the TFT_eSPI Library installation. For esp32 ttgo t1:
+Open your file manager. Go to Documents > Arduino > libraries > TFT_eSPI.
+
+You need to customise `User_Setup_Select.h` file in there (comment 1 line and uncomment 1 line).
+
+Example for esp32 ttgo t1:
 
 ```cpp
 // TFT_eSPI: Needs modifications under Arduino/libraries/TFT_eSPI/User_Setup_Select.h:
@@ -60,7 +64,9 @@ You need to customise `User_Setup_Select.h` file in the TFT_eSPI Library install
 //   #include <User_Setup.h>           // Default setup is root library folder
 ```
 
-Similar for the Adafruit T-Display. For other boards
+Similar for the Adafruit T-Display.
+
+For other boards, you just search the board / display name in the setup file. It basically contains definitions of the connections between your board and the display.
 
 ### Known issues and Fixes
 
