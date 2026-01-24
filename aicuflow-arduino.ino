@@ -69,20 +69,108 @@ SensorMeasurement sensors(DEVICE_ID);
 
 const auto& device = getDeviceProps();
 int screenWidth, screenHeight;
-int BUTTON_L, BUTTON_R;
+int LEFT_BUTTON, RIGHT_BUTTON;
 static uint32_t lastInputMs = 0;
 static bool screenAwake = true;
 static bool wifiAvailable = false;
 
+/**
+ * Menu and Page logic
+ * for TFT Screen controls
+ */
 TFTMenu *mainMenu;
 TFTMenu *actionsMenu;
 TFTMenu *settingsMenu;
+TFTMenu* previouslyActiveMenu = nullptr;
 enum Page {
   PAGE_MENU,
-  PAGE_MEASURE
+  PAGE_MEASURE,
+  PAGE_ABOUT
 };
 Page currentPage = PAGE_MENU;
+void openPage(Page p) {
+  previouslyActiveMenu = TFTMenu::currentActiveMenu;
+  currentPage = p;
+}
+void returnToMenu() {
+  // restore last menu
+  openPage(PAGE_MENU);
+  tft.fillScreen(TFT_BLACK);
+  if (previouslyActiveMenu != nullptr) {
+    previouslyActiveMenu->begin();  // This sets it as active and redraws
+  } else {
+    mainMenu->begin();  // Fallback to main menu
+  }
+  delay(200);         // crude debounce
+}
+void returnToMenuIfButton() {
+  if (
+    digitalRead(LEFT_BUTTON) == LOW ||
+    digitalRead(RIGHT_BUTTON) == LOW
+  ) returnToMenu();
+}
 
+/**
+ * About page - example of a custom page
+ */
+void openAboutPage() {
+  openPage(PAGE_ABOUT);
+
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+  int w = tft.width();
+  int h = tft.height();
+
+  int margin = device.kind_slug == "esp32-ttgo-t1" ? 0 : 12;
+
+  tft.setCursor(margin, margin);
+
+  int titleSize = (w >= 240) ? 2 : 1;
+
+  // Title
+  tft.setTextSize(titleSize);
+  tft.println("Aicuflow");
+
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.println("by AICU GmbH");
+  tft.println();
+
+  // Divider
+  tft.drawFastHLine(margin, tft.getCursorY(), w - margin * 2, TFT_DARKGREY);
+  tft.println();
+  tft.println();
+
+  // Description
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.println("Create big data workflows &");
+  tft.println("automations by chatting with AI.");
+  tft.println("Train custom AI models.");
+  tft.println("Deploy & scale with one click.");
+  tft.println();
+
+  // Divider
+  tft.drawFastHLine(margin, tft.getCursorY(), w - margin * 2, TFT_DARKGREY);
+  tft.println();
+  tft.println();
+
+  // Company details
+  tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+  tft.println("AICU GmbH, Heilbronn");
+  tft.println("HRB 794842 · Amtsgericht Stuttgart");
+  tft.println("VAT: DE368976811");
+  tft.println("CEO: Julia C. Yukovich");
+
+  // Footer (explicit positioning only here)
+  tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+  tft.setCursor(margin, h - 22);
+  tft.print("Docs: aicuflow.com");
+
+  tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+  tft.setCursor(w - 90, h - 10);
+  tft.print("Press any key");
+}
 
 /**
  *  Function definitions
@@ -142,16 +230,16 @@ void initDeviceGPIOPins() {
     digitalWrite(14, HIGH);
 
     // buttons
-    BUTTON_L = 0;
-    BUTTON_R = 35;
-    pinMode(BUTTON_L, INPUT_PULLUP);
-    pinMode(BUTTON_R, INPUT);
+    LEFT_BUTTON = 0;
+    RIGHT_BUTTON = 35;
+    pinMode(LEFT_BUTTON, INPUT_PULLUP);
+    pinMode(RIGHT_BUTTON, INPUT);
   } else if (device.kind_slug == "lilygo-t-display-s3") {
     // buttons
-    BUTTON_L = 0;
-    BUTTON_R = 14;
-    pinMode(BUTTON_L, INPUT_PULLUP);
-    pinMode(BUTTON_R, INPUT);
+    LEFT_BUTTON = 0;
+    RIGHT_BUTTON = 14;
+    pinMode(LEFT_BUTTON, INPUT_PULLUP);
+    pinMode(RIGHT_BUTTON, INPUT);
 
     // power up
     esp_wifi_set_max_tx_power(52); // ca 13dBm
@@ -203,22 +291,25 @@ void plotScreen(int duration=1000) {
   delay(duration);
 }
 void setupMenus() {
-  mainMenu = new TFTMenu(&tft, "Aicuflow IoT");
-  
+  // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
   actionsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
 
+  // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
   settingsMenu->addBackItem();
   settingsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
+  settingsMenu->addItem("About", openAboutPage);
   
+  // main
+  mainMenu = new TFTMenu(&tft, "Aicuflow IoT");
   mainMenu->addItem("Start", openMeasurementPage);
   mainMenu->addSubmenu("Actions", actionsMenu);
   mainMenu->addSubmenu("Settings", settingsMenu);
   
   // after all propagate
-  mainMenu->propagateButtonPins(BUTTON_L, BUTTON_R);
+  mainMenu->propagateButtonPins(LEFT_BUTTON, RIGHT_BUTTON);
   mainMenu->begin();
 }
 
@@ -282,10 +373,10 @@ void connectAPI() {
 void registerAllSensors() {
   // registerSensor(key, label, readFunc, min, max, color, enabled, showGraph)
   sensors.registerSensor("left_button", "Button L", 
-    [&]() { return digitalRead(BUTTON_L) == 0 ? 1.0 : 0.0; },
+    [&]() { return digitalRead(LEFT_BUTTON) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_PURPLE, LOG_SEND, SHOW_GRAPH);
   sensors.registerSensor("right_button", "Button R",
-    [&]() { return digitalRead(BUTTON_R) == 0 ? 1.0 : 0.0; },
+    [&]() { return digitalRead(RIGHT_BUTTON) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
   if (device.has_wifi) sensors.registerSensor("rssi", "RSSI (dBm)",
     []() { return (double)WiFi.RSSI(); },
@@ -354,7 +445,7 @@ void setup() {
 }
 
 void openMeasurementPage() {
-  currentPage = PAGE_MEASURE;
+  openPage(PAGE_MEASURE);
 
   if (device.has_display)  plotScreen(1000);
   if (device.has_wifi)     connectWifiOrTimeout();
@@ -403,7 +494,10 @@ void loop() {
   if (currentPage == PAGE_MENU) {
     mainMenu->update();
     delay(20);
-  } else {
+  } else if (currentPage == PAGE_MEASURE) {
     updateMeasurementPage();
+  } else {
+    returnToMenuIfButton();
+    delay(20);
   }
 }

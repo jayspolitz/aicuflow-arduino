@@ -83,6 +83,7 @@ This [arduino client](https://aicuflow.com/docs/library/arduino) library for [ai
 - aicuflow logo tft boot animation and screen timeout
 - automatic scrolling line graphs on tft display
 - simple sensor detection, measuring and chunked streaming
+- user driveable menus & config
 
 ### Planned features
 
@@ -90,7 +91,6 @@ needed
 
 - more boards
 - automatic aicu session refreshing
-- user driveable menus & config
 - status indicators (wifi, power, ...)
 - publish library to arduino list
 
