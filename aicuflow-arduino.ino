@@ -22,6 +22,11 @@
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
+/* AVAILABLE TFT COLORS ===
+ * TFT_BLACK, TFT_NAVY, TFT_DARKGREEN, TFT_DARKCYAN, TFT_MAROON,
+ * TFT_PURPLE, TFT_OLIVE, TFT_LIGHTGREY, TFT_DARKGREY, TFT_BLUE,
+ * TFT_GREEN, TFT_CYAN, TFT_RED, TFT_MAGENTA, TFT_YELLOW, TFT_WHITE,
+ * TFT_ORANGE, TFT_GREENYELLOW, TFT_PINK === */
 
 #include <TFT_eSPI.h> // v2.5.43 Bodmer, needs customisation
 #include <SPI.h>
