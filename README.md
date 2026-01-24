@@ -33,6 +33,17 @@ Or shorter:
 
 ## Setup troubleshooting
 
+### Supported devices
+
+We tested this on a hand full of arduino-compatible devices. To be on the safe side, we recommend you use one of these boards. Others may still work, but are not present in our [hardware lab](https://aicuflow.com/docs/library/arduino).
+
+- ESP32 Wroom
+- ESP32 Devkit
+- ESP32 Lilygo T-Display S3
+- ESP32 TTGO-T1
+
+More are coming once we are moving to a stable beta.
+
 ### Loader mode of Lilygo T-Display S3
 
 Can't find its serial port? Long press left, keep, short click sidebutton.
