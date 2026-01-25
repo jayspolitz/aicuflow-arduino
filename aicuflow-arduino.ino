@@ -53,6 +53,7 @@
 #include "library/apps/colortest.cpp"  // page: gradient color test page
 #include "library/apps/colorwheeltest.cpp"  // page: color test page
 #include "library/apps/snakegame.cpp"  // page: snake game
+#include "library/apps/gol.cpp"  // page: conways game of life
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -98,6 +99,7 @@ void setupMenus() {
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
+  actionsMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
   actionsMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
   actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
   actionsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
@@ -440,6 +442,7 @@ void setup() {
   pageManager->registerPage("colors", onColorTestPageOpen, onColorTestPageUpdate);
   pageManager->registerPage("colorwheel", onColorWheelTestPageOpen, onColorWheelTestPageUpdate);
   pageManager->registerPage("snake", onSnakeGamePageOpen, onSnakeGamePageUpdate);
+  pageManager->registerPage("gol", onGameOfLifePageOpen, onGameOfLifePageUpdate);
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
