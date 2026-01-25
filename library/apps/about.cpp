@@ -8,7 +8,7 @@ void onAboutPageOpen() {
   int w = tft.width();
   int h = tft.height();
 
-  int margin = device.kind_slug == "esp32-ttgo-t1" ? 0 : 12;
+  int margin = device->kind_slug == "esp32-ttgo-t1" ? 0 : 12;
 
   tft.setCursor(margin, margin);
 

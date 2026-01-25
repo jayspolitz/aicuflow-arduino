@@ -1,4 +1,6 @@
 #pragma once
+#ifndef DEVICE_PROPS_H
+#define DEVICE_PROPS_H
 #include <Arduino.h>
 #include <stdint.h>
 
@@ -31,3 +33,4 @@ struct DeviceProps {
 };
 
 const DeviceProps& getDeviceProps();
+#endif // DEVICE_PROPS_H

@@ -116,7 +116,7 @@ void sendTask(void* parameter) {
 // initing
 void initDeviceGPIOPins() {
   // specifics
-  if (device.kind_slug == "esp32-ttgo-t1") {
+  if (device->kind_slug == "esp32-ttgo-t1") {
     // voltage divider something
     pinMode(14, OUTPUT);
     digitalWrite(14, HIGH);
@@ -126,7 +126,7 @@ void initDeviceGPIOPins() {
     BUTTON_R = 35;
     pinMode(BUTTON_L, INPUT_PULLUP);
     pinMode(BUTTON_R, INPUT);
-  } else if (device.kind_slug == "lilygo-t-display-s3") {
+  } else if (device->kind_slug == "lilygo-t-display-s3") {
     // buttons
     BUTTON_L = 0;
     BUTTON_R = 14;
@@ -142,7 +142,7 @@ void initSerial() {
   while (!Serial && millis() < 2000) delay(10);
   if (VERBOSE) Serial.println("Hello World!");
   delay(500);
-  Serial.print("Aicuflow booted on "); Serial.print(device.kind_slug); Serial.println("!");
+  Serial.print("Aicuflow booted on "); Serial.print(device->kind_slug); Serial.println("!");
 }
 void initTFTScreen() {
   screenWidth  = tft.width();
@@ -168,10 +168,10 @@ void plotScreen(int duration=1000) {
   tft.setRotation(0); // vertical
   tft.setCursor(0, 0);
   tft.fillScreen(TFT_BLACK); // aicu logo
-  int topoffset = (device.kind_slug == "lilygo-t-display-s3") ? 6 : 0;
+  int topoffset = (device->kind_slug == "lilygo-t-display-s3") ? 6 : 0;
   tft.pushImage(screenWidth/2-126/2, topoffset, 126, 28, aicuflow_logo_wide);
   tft.setCursor(0, 32);
-  if (device.kind_slug == "lilygo-t-display-s3") tft.println("");
+  if (device->kind_slug == "lilygo-t-display-s3") tft.println("");
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK); // details
   tft.println("Aicu IoT-AI Endpoint");
@@ -184,7 +184,7 @@ void plotScreen(int duration=1000) {
 
 // connecting
 void connectWifiOrTimeout() {
-  if (device.has_display) tft.print("Connecting to wifi");
+  if (device->has_display) tft.print("Connecting to wifi");
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WLAN_SSID, WLAN_PASS);
@@ -196,7 +196,7 @@ void connectWifiOrTimeout() {
     && (!WIFI_TIMEOUT || (millis() - start < WIFI_TIMEOUT)) // timeout
   ) {
     delay(500);
-    if (device.has_display) tft.print("."); // Loading progress
+    if (device->has_display) tft.print("."); // Loading progress
   }
 
   // no connection = off
@@ -216,25 +216,25 @@ void connectWifiOrTimeout() {
   aicu.setWiFiClient(&client);
   
   // print
-  if (wifiAvailable && device.has_display) {
+  if (wifiAvailable && device->has_display) {
     tft.print("\n");
     tft.println("WiFi Connected!");
     tft.print("IP: "); 
     tft.println(WiFi.localIP());
     tft.println("");
-  } else if (device.has_display) tft.print("\n");
+  } else if (device->has_display) tft.print("\n");
   Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
   delay(500);
 }
 void connectAPI() {
-  if (device.has_display) tft.println("Connecting API...");
+  if (device->has_display) tft.println("Connecting API...");
 
   if (!aicu.login(AICU_USER, AICU_PASS)) {
-    if (device.has_display) tft.println("Auth failed! :/");
+    if (device->has_display) tft.println("Auth failed! :/");
     Serial.println("Login failed!");
     return;
   } else {
-    if (device.has_display) tft.println("API connected!");
+    if (device->has_display) tft.println("API connected!");
     Serial.println("Login success!");
   }
 }
@@ -247,7 +247,7 @@ void registerAllSensors() {
   sensors.registerSensor("right_button", "Button R",
     [&]() { return digitalRead(BUTTON_R) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
-  if (device.has_wifi) sensors.registerSensor("rssi", "RSSI (dBm)",
+  if (device->has_wifi) sensors.registerSensor("rssi", "RSSI (dBm)",
     []() { return (double)WiFi.RSSI(); },
     -100, -30, TFT_GREEN, LOG_SEND, SHOW_GRAPH);
   sensors.registerSensor("voltage", "Voltage (V)", // 2=ResDiv;3.3RefV;4095-12-bitADCres
@@ -285,7 +285,7 @@ void registerAllSensors() {
   }
 }
 void initSensorGraphs() {
-  if (device.kind_slug == "lilygo-t-display-s3")
+  if (device->kind_slug == "lilygo-t-display-s3")
     sensors.setGraphSpacing(22, 5);
   else sensors.setGraphSpacing(14, 3);
   tft.println("Measuring...");
@@ -305,17 +305,17 @@ void setup() {
   initDeviceGPIOPins();
   initSerial();
   
-  if (!device.has_display) delay(1000);
-  if (device.has_display)  initTFTScreen();
-  if (device.has_display)  bootScreen(3000);
-  if (device.has_display)  plotScreen(1000);
-  if (device.has_wifi)     connectWifiOrTimeout();
-  if (device.has_wifi && wifiAvailable) connectAPI();
+  if (!device->has_display) delay(1000);
+  if (device->has_display)  initTFTScreen();
+  if (device->has_display)  bootScreen(3000);
+  if (device->has_display)  plotScreen(1000);
+  if (device->has_wifi)     connectWifiOrTimeout();
+  if (device->has_wifi && wifiAvailable) connectAPI();
 
   registerAllSensors();
-  if (device.has_display)  initSensorGraphs();
+  if (device->has_display)  initSensorGraphs();
   
-  if (device.has_wifi) {
+  if (device->has_wifi) {
     flushQueue = xQueueCreate(8, sizeof(JsonBatch));
     xTaskCreatePinnedToCore(sendTask, "sendTask", 8192, NULL, 1, NULL, 1);
   }
@@ -332,12 +332,12 @@ void loop() {
   sensors.measure();
 
   // Forward Data
-  if (VERBOSE && !device.has_display)    sensors.printValues(); // May be BLOCKING!
-  if (screenAwake && device.has_display) sensors.updateGraphs();
-  if (wifiAvailable && device.has_wifi)  addSampleAndAutoSend();
+  if (VERBOSE && !device->has_display)    sensors.printValues(); // May be BLOCKING!
+  if (screenAwake && device->has_display) sensors.updateGraphs();
+  if (wifiAvailable && device->has_wifi)  addSampleAndAutoSend();
 
   // Screen power management
-  if (device.has_display && SCREEN_IDLE_MS) {
+  if (device->has_display && SCREEN_IDLE_MS) {
     bool anyInput = sensors.getValue("left_button") || sensors.getValue("right_button");
     if (anyInput) {
       lastInputMs = millis();

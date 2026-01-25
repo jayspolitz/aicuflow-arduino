@@ -1,8 +1,9 @@
 #pragma once
 #include <TFT_eSPI.h>
+#include "library/device/DeviceProps.h"
 
 // use the global ones
 extern TFT_eSPI tft;
-extern const decltype(getDeviceProps())& device;
+extern const DeviceProps* device;
 
 void onAboutPageOpen();

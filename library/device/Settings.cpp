@@ -5,13 +5,13 @@ const char* PREFS = "aicu-settings";
 Preferences preferences;
 
 // props being saved
-String deviceName = device.kind_short;
+String deviceName = "device";
 const char* PREF_DNAME = "deviceName";
 
 // functions
 void loadSettings() {
   preferences.begin(PREFS, false); // false = r/w mode
-  deviceName = preferences.getString(PREF_DNAME, deviceName);
+  deviceName = preferences.getString(PREF_DNAME, device->kind_short);
   preferences.end();
   if (VERBOSE) {
     Serial.println("Loaded pref name: " + deviceName);
