@@ -1,3 +1,5 @@
+> **Try it out, and use this code for a PoC or your custom projects!**
+
 # Aicuflow Arduino Library
 
 [![](https://aicuflow.com/api/badge?label=&message=data%20storage&color=036b64)](https://aicuflow.com/docs/library/arduino)
@@ -5,7 +7,7 @@
 [![](https://aicuflow.com/api/badge?label=&message=machine%20learning&color=036b64)](https://aicuflow.com)
 [![](https://aicuflow.com/api/badge?label=&message=arduino%20compatible&color=036b64)](https://aicuflow.com)
 
-Machine learning and Arduino? [Aicuflow](https://aicuflow.com) by AICU GmbH makes it possible!
+Machine learning and Arduino? [Aicuflow](https://aicuflow.com) by AICU GmbH makes it possible! Actually, more than that: pretty menus, inputs, plots and sensor streaming to the cloud - with some free data storage.
 
 ![](https://aicuflow.com/docs/library/arduino/esp32title.png)
 
@@ -19,17 +21,22 @@ For more details and examples, refer to our [documentation](https://aicuflow.com
 
 ## Quickstart
 
+Download the repository source first:
+
+```bash
+git clone https://github.com/AICU-HEALTH/aicuflow-arduino
+```
+
 [Click here to view full documentation](https://aicuflow.com/docs/library/arduino)
 
-Or shorter:
+Short install guide:
 
 1. Install Arduino IDE
 2. Install ESP32 Board in it (official Espressif version)
 3. Install Libraries (Search in Arduino IDE)
    - TFT_eSPI (needs setup, see TFT Setup below)
    - ArduinoJSON
-4. Clone this Repo
-5. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
+4. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 
 ## Setup troubleshooting
 
@@ -78,18 +85,23 @@ This [arduino client](https://aicuflow.com/docs/library/arduino) library for [ai
 
 ### Already working features
 
-- wifi connection with timeout
+Library (folder `library/*`, see `examples/*`)
+
 - aicuflow api client with core endpoints and auth
-- aicuflow logo tft boot animation and screen timeout
 - automatic scrolling line graphs on tft display
 - simple sensor detection, measuring and chunked streaming
 - user driveable menus & config
+
+Aicu Embedded OS (`aicuflow-arduino.ino`)
+
+- wifi connection with timeout
+- aicuflow logo tft boot animation and screen timeout
 
 ### Planned features
 
 needed
 
-- more boards
+- more boards (see [list of almost all microcontrollers](https://github.com/AICU-HEALTH/aicuflow-arduino/blob/main/docs/Microcontrollers.md))
 - automatic aicu session refreshing
 - status indicators (wifi, power, ...)
 - publish library to arduino list
