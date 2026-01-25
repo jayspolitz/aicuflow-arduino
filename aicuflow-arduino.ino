@@ -52,6 +52,7 @@
 #include "library/apps/btscan.cpp"  // page: bluethooth scan
 #include "library/apps/colortest.cpp"  // page: gradient color test page
 #include "library/apps/colorwheeltest.cpp"  // page: color test page
+#include "library/apps/snakegame.cpp"  // page: snake game
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -97,6 +98,7 @@ void setupMenus() {
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
+  actionsMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
   actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
   actionsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
   actionsMenu->addItem("Colortest", []() { pageManager->openPage("colors"); });
@@ -437,6 +439,7 @@ void setup() {
   pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
   pageManager->registerPage("colors", onColorTestPageOpen, onColorTestPageUpdate);
   pageManager->registerPage("colorwheel", onColorWheelTestPageOpen, onColorWheelTestPageUpdate);
+  pageManager->registerPage("snake", onSnakeGamePageOpen, onSnakeGamePageUpdate);
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
