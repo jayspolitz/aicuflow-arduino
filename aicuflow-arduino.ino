@@ -101,6 +101,12 @@ void setupMenus() {
   // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
   settingsMenu->addBackItem();
+  settingsMenu->addItem("WiFi SSID", []() { pageManager->openPage("keyboard", (void*)3); });
+  settingsMenu->addItem("WiFi Pass", []() { pageManager->openPage("keyboard", (void*)4); });
+  settingsMenu->addItem("User Mail", []() { pageManager->openPage("keyboard", (void*)5); });
+  settingsMenu->addItem("User Pass", []() { pageManager->openPage("keyboard", (void*)6); });
+  settingsMenu->addItem("Flow ID", []() { pageManager->openPage("keyboard", (void*)7); });
+
   settingsMenu->addItem("Device Name", []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
   settingsMenu->addItem("File Name", []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
   settingsMenu->addItem("About AICU", []() { pageManager->openPage("about"); });
@@ -139,6 +145,12 @@ void onKeyboardPageOpen() {
   int context = pageManager->getContext<int>();
   if (context == 1) keyboard->setText(deviceName);          // 1 = CONTEXT_DEVICE_NAME
   else if (context == 2) keyboard->setText(streamFileName); // 2 = CONTEXT_FILE_NAME
+
+  else if (context == 3) keyboard->setText(wlanSSID); // 3 = CONTEXT_WLAN_SSID
+  else if (context == 4) keyboard->setText(wlanPass); // 4 = CONTEXT_WLAN_PASS
+  else if (context == 5) keyboard->setText(aicuMail); // 5 = CONTEXT_AICU_USER
+  else if (context == 6) keyboard->setText(aicuPass); // 6 = CONTEXT_AICU_PASS
+  else if (context == 7) keyboard->setText(aicuFlow); // 7 = CONTEXT_AICU_FLOW
   
   tft.fillScreen(TFT_BLACK);
   keyboard->begin();
@@ -147,6 +159,13 @@ void onTextConfirmed(String text) {
   int context = pageManager->getContext<int>();
   if (context == 1) deviceName = text;          // 1 = CONTEXT_DEVICE_NAME
   else if (context == 2) streamFileName = text; // 2 = CONTEXT_FILE_NAME
+
+  else if (context == 3) wlanSSID = text; // 3 = CONTEXT_WLAN_SSID
+  else if (context == 4) wlanPass = text; // 4 = CONTEXT_WLAN_PASS
+  else if (context == 5) aicuMail = text; // 5 = CONTEXT_AICU_USER
+  else if (context == 6) aicuPass = text; // 6 = CONTEXT_AICU_PASS
+  else if (context == 7) aicuFlow = text; // 7 = CONTEXT_AICU_FLOW
+
   saveSettings();
   applySettings();
   if(VERBOSE) Serial.println("Saved: " + text);
@@ -190,7 +209,7 @@ void sendTask(void* parameter) {
   JsonBatch jb;
   for (;;) {
     if (xQueueReceive(flushQueue, &jb, portMAX_DELAY) == pdTRUE) {
-      aicu.sendTimeseriesPoints(PROJ_FLOW, streamFileName, *jb.doc);
+      aicu.sendTimeseriesPoints(aicuFlow, streamFileName, *jb.doc);
       delete jb.doc; // free memory
     }
   }
@@ -198,9 +217,9 @@ void sendTask(void* parameter) {
 
 // connecting
 void connectWifiOrTimeout() {
-  if (device->has_display) tft.print("Connecting");
+  if (device->has_display) tft.print("Connecting...");
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WLAN_SSID, WLAN_PASS);
+  WiFi.begin(wlanSSID, wlanPass);
 
   // try to connect (until timeout)
   unsigned long start = millis();
@@ -242,7 +261,7 @@ void connectWifiOrTimeout() {
   delay(500);
 }
 void connectAPI() {
-  if (!aicu.login(AICU_USER, AICU_PASS)) {
+  if (!aicu.login(aicuMail, aicuPass)) {
     if (device->has_display){
       tft.setTextColor(TFT_RED);
       tft.println("API connection failed! :/");
@@ -302,7 +321,7 @@ void initSensorGraphs() {
   else sensors.setGraphSpacing(14, 3);
   if (device->has_wifi && wifiAvailable){
     tft.setTextColor(TFT_CYAN);
-    tft.println("Measuring & Sending...");
+    tft.print("Sending to "); tft.print(streamFileName); tft.println(".arrow");
     tft.setTextColor(TFT_WHITE);
   }
   else {

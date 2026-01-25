@@ -7,5 +7,11 @@ extern const DeviceProps* device;
 extern const int VERBOSE;
 
 // import factory settings
+extern const char* WLAN_SSID;
+extern const char* WLAN_PASS;
+extern const char* AICU_USER;
+extern const char* AICU_PASS;
+extern const char* PROJ_FLOW;
+
 extern const char* PROJ_FILE;
 extern const char* DEVICE_ID_SUFFIX;

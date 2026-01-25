@@ -4,26 +4,49 @@
 const char* PREFS = "aicu-settings";
 Preferences preferences;
 
-// props being saved
-String deviceName = "device"; // auto-replaced by device id first time
+// props being saved; defaults here from main sketch, same order
+String wlanSSID = WLAN_SSID;
+String wlanPass = WLAN_PASS;
+String aicuMail = AICU_USER;
+String aicuPass = AICU_PASS;
+String aicuFlow = PROJ_FLOW;
+
 String streamFileName = PROJ_FILE;
+String deviceName = "device"; // auto-replaced by device id first time
 
 // functions
 void loadSettings() {
   preferences.begin(PREFS, false); // false = r/w mode
-  deviceName = preferences.getString("deviceName", String(device->kind_short) + DEVICE_ID_SUFFIX);
+
+  wlanSSID = preferences.getString("wlanSSID", wlanSSID);
+  wlanPass = preferences.getString("wlanPass", wlanPass);
+  aicuMail = preferences.getString("aicuMail", aicuMail);
+  aicuPass = preferences.getString("aicuPass", aicuPass);
+  aicuFlow = preferences.getString("aicuFlow", aicuFlow);
+
   streamFileName = preferences.getString("streamFileName", streamFileName);
+  deviceName = preferences.getString("deviceName", String(device->kind_short) + DEVICE_ID_SUFFIX);
+
   preferences.end();
   if (VERBOSE) {
     Serial.println("Loaded pref name: " + deviceName);
     Serial.println("Loaded pref fname: " + streamFileName);
+    // tbd more
   }
 }
 
 void saveSettings() {
   preferences.begin(PREFS, false); // false = r/w mode
-  preferences.putString("deviceName", deviceName);
+
+  preferences.putString("wlanSSID", wlanSSID);
+  preferences.putString("wlanPass", wlanPass);
+  preferences.putString("aicuMail", aicuMail);
+  preferences.putString("aicuPass", aicuPass);
+  preferences.putString("aicuFlow", aicuFlow);
+
   preferences.putString("streamFileName", streamFileName);
+  preferences.putString("deviceName", deviceName);
+
   preferences.end();
   if (VERBOSE) Serial.println("Prefs saved to mem!");
 }
