@@ -5,22 +5,25 @@ const char* PREFS = "aicu-settings";
 Preferences preferences;
 
 // props being saved
-String deviceName = "device";
-const char* PREF_DNAME = "deviceName";
+String deviceName = "device"; // auto-replaced by device id first time
+String streamFileName = PROJ_FILE;
 
 // functions
 void loadSettings() {
   preferences.begin(PREFS, false); // false = r/w mode
-  deviceName = preferences.getString(PREF_DNAME, device->kind_short);
+  deviceName = preferences.getString("deviceName", String(device->kind_short) + DEVICE_ID_SUFFIX);
+  streamFileName = preferences.getString("streamFileName", streamFileName);
   preferences.end();
   if (VERBOSE) {
     Serial.println("Loaded pref name: " + deviceName);
+    Serial.println("Loaded pref fname: " + streamFileName);
   }
 }
 
 void saveSettings() {
   preferences.begin(PREFS, false); // false = r/w mode
-  preferences.putString(PREF_DNAME, deviceName);
+  preferences.putString("deviceName", deviceName);
+  preferences.putString("streamFileName", streamFileName);
   preferences.end();
   if (VERBOSE) Serial.println("Prefs saved to mem!");
 }

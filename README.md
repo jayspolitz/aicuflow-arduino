@@ -29,7 +29,7 @@ git clone https://github.com/AICU-HEALTH/aicuflow-arduino
 
 [Click here to view full documentation](https://aicuflow.com/docs/library/arduino)
 
-Short install guide:
+### Short install guide
 
 1. Install Arduino IDE
 2. Install ESP32 Board in it (official Espressif version)
@@ -39,6 +39,31 @@ Short install guide:
 4. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 
 In the main sketch (`aicuflow-arduino.ino`), search for **add more**, and you will find many options to add customisations (sensors, menus, pages).
+
+### Change factory settings
+
+You can manually set up the settings on each device via buttons, or flash them with custom built firmware containing your settings. Check `aicuflow-arduino.ino` and customise factory settings.
+
+```cpp
+// START FACTORY SETTINGS REPLACE THIS
+// needed to work
+const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
+const char* WLAN_PASS = "your-pass";
+const char* AICU_USER = "your-mail"; // register at https://aicuflow.com/signup
+const char* AICU_PASS = "your-pass";
+const char* PROJ_FLOW = "your-ai-cu-flow-uuid"; // create / select at https://aicuflow.com/flows
+
+// optional options
+const char* PROJ_FILE = "esp32"; // will be auto created with .arrow extension
+const int VERBOSE = true;
+const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
+const char* DEVICE_ID_SUFFIX = ""; // 0,1,2,3 appended to id if you have multiple of same kind
+const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
+const int MEASURE_DELAY_MS = 100;
+const int SCREEN_IDLE_MS = 60000; // also needs TFT_BL eg 38
+const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
+// END FACTORY SETTINGS REPLACE THIS
+```
 
 ## Setup troubleshooting
 

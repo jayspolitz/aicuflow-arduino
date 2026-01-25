@@ -43,7 +43,7 @@ const char* WLAN_PASS = "your-pass";
 const char* AICU_USER = "your-mail";
 const char* AICU_PASS = "your-pass";
 const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
-const char* PROJ_FILE = "esp32.arrow";
+const char* PROJ_FILE = "esp32";
 
 const int VERBOSE = true;
 const char* DEVICE_ID = "ttt1"; // ttgo (t1), esp32 t display s3

@@ -18,7 +18,7 @@ const char* AICU_PASS = "your-pass";
 const char* WIFI_SSID = "your-wifi";
 const char* WIFI_PASS = "your-pass";
 const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
-const char* PROJ_FILE = "stream-test.arrow";
+const char* PROJ_FILE = "stream-test";
 
 WiFiClientSecure client;
 AicuClient aicu("https://prod-backend.aicuflow.com", true);

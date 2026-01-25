@@ -168,9 +168,8 @@ bool AicuClient::sendTimeseriesPoints(const String& flowId, const String& filena
         }
     }
 
-
     // POST
-    String path = "/data/write-values/?flow=" + flowId + "&filename=" + filename;
+    String path = "/data/write-values/?flow=" + flowId + "&filename=" + filename + ".arrow";
     DynamicJsonDocument resp(1024);
     bool ok = _postJson(path, points, resp);
 

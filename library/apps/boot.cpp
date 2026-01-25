@@ -22,7 +22,5 @@ void plotScreen(int duration=1000) {
   tft.println("Aicu IoT-AI Endpoint");
   tft.println("https://aicuflow.com");
   tft.println("");
-  tft.println("");
-  tft.println("Device started...");
   delay(duration);
 }

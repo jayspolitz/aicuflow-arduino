@@ -41,7 +41,9 @@ struct SensorDef {
  */
 class SensorMeasurement {
 public:
-    SensorMeasurement(const char* deviceId);
+    const char* deviceId;
+
+    SensorMeasurement(const char* deviceId="dev");
     ~SensorMeasurement();
 
     // Core sensor registration - use this for everything!
@@ -78,7 +80,6 @@ public:
     int getGraphCount() const;
 
 private:
-    const char* deviceId;
     std::vector<SensorDef> sensors;
     std::vector<double> values;
     std::vector<ScrollingGraph*> graphs;

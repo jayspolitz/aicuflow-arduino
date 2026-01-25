@@ -52,33 +52,39 @@
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
-//#settings: empty, REPLACE THIS
+// START FACTORY SETTINGS REPLACE THIS
+// needed to work
 const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
 const char* WLAN_PASS = "your-pass";
 const char* AICU_USER = "your-mail"; // register at https://aicuflow.com/signup
 const char* AICU_PASS = "your-pass";
-const char* PROJ_FLOW = "your-ai-cu-flow-uuid"; // create one at https://aicuflow.com
-const char* PROJ_FILE = "esp32.arrow"; // will be auto created
+const char* PROJ_FLOW = "your-ai-cu-flow-uuid"; // create / select at https://aicuflow.com/flows
 
+// optional options
+const char* PROJ_FILE = "esp32"; // will be auto created with .arrow extension
 const int VERBOSE = true;
 const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
-const char* DEVICE_ID = "aicu0"; // if you have multiple devices
+const char* DEVICE_ID_SUFFIX = ""; // 0,1,2,3 appended to id if you have multiple of same kind
 const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
 const int SCREEN_IDLE_MS = 60000; // also needs TFT_BL eg 38
 const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
-//#endsettings: empty, REPLACE THIS
+// END FACTORY SETTINGS REPLACE THIS
 
 // globals
 WiFiClientSecure client;
 AicuClient aicu(API_URL, VERBOSE);
 TFT_eSPI tft = TFT_eSPI();
-SensorMeasurement sensors(DEVICE_ID);
+SensorMeasurement sensors("dev");
 
 const DeviceProps* device = nullptr;
 int screenWidth, screenHeight;
 int LEFT_BUTTON, RIGHT_BUTTON;
 static bool wifiAvailable = false;
+
+void applySettings() {
+  sensors.deviceId = deviceName.c_str();
+}
 
 // Menu & UI
 TFTMenu *mainMenu, *actionsMenu, *settingsMenu;
@@ -88,7 +94,6 @@ void setupMenus() {
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
-  actionsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
   actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
   actionsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
   actionsMenu->addItem("Random", []() { pageManager->openPage("random"); });
@@ -96,9 +101,11 @@ void setupMenus() {
   // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
   settingsMenu->addBackItem();
-  settingsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
   settingsMenu->addItem("Device Name", []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
-  settingsMenu->addItem("About", []() { pageManager->openPage("about"); });
+  settingsMenu->addItem("File Name", []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
+  settingsMenu->addItem("About AICU", []() { pageManager->openPage("about"); });
+  settingsMenu->addItem("Factory Reset", []() { clearSettings(); esp_restart(); });
+  settingsMenu->addItem("Restart Device", []() { esp_restart(); });
   
   // main
   mainMenu = new TFTMenu(&tft, "Aicuflow IoT");
@@ -129,14 +136,19 @@ void onMenuPageOpen() {
 
 // Keyboard
 void onKeyboardPageOpen() {
-  keyboard->setText(deviceName);
+  int context = pageManager->getContext<int>();
+  if (context == 1) keyboard->setText(deviceName);          // 1 = CONTEXT_DEVICE_NAME
+  else if (context == 2) keyboard->setText(streamFileName); // 2 = CONTEXT_FILE_NAME
+  
   tft.fillScreen(TFT_BLACK);
   keyboard->begin();
 }
 void onTextConfirmed(String text) {
   int context = pageManager->getContext<int>();
-  if (context == 1) deviceName = text; // 1 = CONTEXT_DEVICE_NAME
+  if (context == 1) deviceName = text;          // 1 = CONTEXT_DEVICE_NAME
+  else if (context == 2) streamFileName = text; // 2 = CONTEXT_FILE_NAME
   saveSettings();
+  applySettings();
   if(VERBOSE) Serial.println("Saved: " + text);
   pageManager->returnToPrevious();
   pageManager->blockInputFor(300);
@@ -178,7 +190,7 @@ void sendTask(void* parameter) {
   JsonBatch jb;
   for (;;) {
     if (xQueueReceive(flushQueue, &jb, portMAX_DELAY) == pdTRUE) {
-      aicu.sendTimeseriesPoints(PROJ_FLOW, PROJ_FILE, *jb.doc);
+      aicu.sendTimeseriesPoints(PROJ_FLOW, streamFileName, *jb.doc);
       delete jb.doc; // free memory
     }
   }
@@ -186,8 +198,7 @@ void sendTask(void* parameter) {
 
 // connecting
 void connectWifiOrTimeout() {
-  if (device->has_display) tft.print("Connecting to wifi");
-
+  if (device->has_display) tft.print("Connecting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(WLAN_SSID, WLAN_PASS);
 
@@ -207,7 +218,9 @@ void connectWifiOrTimeout() {
     WiFi.mode(WIFI_OFF);
     wifiAvailable = false;
     tft.print("\n");
-    tft.println("No wifi connection!");
+    tft.setTextColor(TFT_RED);
+    tft.println("WiFi failed :/");
+    tft.setTextColor(TFT_WHITE);
     return;
   } else { // connected = on
     wifiAvailable = true;
@@ -220,23 +233,29 @@ void connectWifiOrTimeout() {
   // print
   if (wifiAvailable && device->has_display) {
     tft.print("\n");
-    tft.println("WiFi Connected!");
-    tft.print("IP: "); 
+    tft.setTextColor(TFT_GREEN);
+    tft.print("WiFi: "); 
     tft.println(WiFi.localIP());
-    tft.println("");
+    tft.setTextColor(TFT_WHITE);
   } else if (device->has_display) tft.print("\n");
   Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
   delay(500);
 }
 void connectAPI() {
-  if (device->has_display) tft.println("Connecting API...");
-
   if (!aicu.login(AICU_USER, AICU_PASS)) {
-    if (device->has_display) tft.println("Auth failed! :/");
+    if (device->has_display){
+      tft.setTextColor(TFT_RED);
+      tft.println("API connection failed! :/");
+      tft.setTextColor(TFT_WHITE);
+    }
     Serial.println("Login failed!");
     return;
   } else {
-    if (device->has_display) tft.println("API connected!");
+    if (device->has_display){
+      tft.setTextColor(TFT_GREEN);
+      tft.println("API connected!");
+      tft.setTextColor(TFT_WHITE);
+    }
     Serial.println("Login success!");
   }
 }
@@ -281,7 +300,16 @@ void initSensorGraphs() {
   if (device->kind_slug == "lilygo-t-display-s3")
     sensors.setGraphSpacing(22, 5);
   else sensors.setGraphSpacing(14, 3);
-  tft.println("Measuring...");
+  if (device->has_wifi && wifiAvailable){
+    tft.setTextColor(TFT_CYAN);
+    tft.println("Measuring & Sending...");
+    tft.setTextColor(TFT_WHITE);
+  }
+  else {
+    tft.setTextColor(TFT_YELLOW);
+    tft.println("Measuring Locally...");
+    tft.setTextColor(TFT_WHITE);
+  }
   sensors.initGraphs(&tft, screenWidth, screenHeight);
   if (VERBOSE) {
     Serial.print("Graphed sensors: ");
@@ -371,6 +399,7 @@ void setup() {
   initDeviceGPIOPins();
   initSerial();
   loadSettings();
+  applySettings();
   
   if (!device->has_display) delay(1000);
   if (device->has_display)  initTFTScreen();
