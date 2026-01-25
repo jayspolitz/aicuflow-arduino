@@ -24,32 +24,31 @@
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
-/* AVAILABLE TFT COLORS ===
+/* (Helpful) Color pallette for tft screens:
  * TFT_BLACK, TFT_NAVY, TFT_DARKGREEN, TFT_DARKCYAN, TFT_MAROON,
  * TFT_PURPLE, TFT_OLIVE, TFT_LIGHTGREY, TFT_DARKGREY, TFT_BLUE,
  * TFT_GREEN, TFT_CYAN, TFT_RED, TFT_MAGENTA, TFT_YELLOW, TFT_WHITE,
- * TFT_ORANGE, TFT_GREENYELLOW, TFT_PINK === */
+ * TFT_ORANGE, TFT_GREENYELLOW, TFT_PINK */
 
-#include <TFT_eSPI.h> // v2.5.43 Bodmer, needs customisation
-#include <SPI.h>
+#include <TFT_eSPI.h>         // LIB NEED TO INSTALL v2.5.43 Bodmer, needs customisation
+#include <SPI.h>              // built-in periphery protocol
+#include <WiFi.h>             // built-in wifi connection (some devices)
+#include <WiFiClientSecure.h> // alt (insecure): #include <WiFiClient.h>
+#include <HTTPClient.h>       // built-in webbrowser :)
+#include <ArduinoJson.h>      // LIB NEED TO INSTALL 7.4.2 by Benoit
+#include <esp_wifi.h>         // some esp32 boards need: esp_wifi_set_max_tx_power(52); // ca 13dBm
 
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <esp_wifi.h>     // some boards need: esp_wifi_set_max_tx_power(52); // ca 13dBm
-#include <HTTPClient.h>
-#include <ArduinoJson.h>  // 7.4.2 by Benoit
-#include <Preferences.h>  // ESP32 built-in lib
+#include "library/device/DeviceProps.cpp"        // device detection
+#include "library/device/Settings.cpp"           // persistent settings
+#include "library/aicuflow/AicuClient.cpp"       // --> client library you can use <--
+#include "library/sensors/SensorMeasurement.cpp" // sensor registry for measuring, plots and saving
+#include "library/graphics/TFTKeyboard.cpp"      // enter strings using buttons (cool)
+#include "library/graphics/PageManager.cpp"      // multi-page app on screens
+#include "library/graphics/aicuflow_logo_64px.h" // image: aicuflow_logo
+#include "library/graphics/aicuflow_logo_wide.h" // image: aicuflow_logo_wide
 
-#include "library/device/DeviceProps.cpp"
-#include "library/aicuflow/AicuClient.cpp"
-#include "library/sensors/SensorMeasurement.cpp"
-#include "library/graphics/TFTKeyboard.cpp"
-#include "library/graphics/aicuflow_logo_64px.h" // aicuflow_logo
-#include "library/graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
-#include "library/graphics/PageManager.cpp"
-
-#include "library/apps/about.cpp"
-#include "library/apps/random.cpp"
+#include "library/apps/about.cpp"   // page: about (message)
+#include "library/apps/random.cpp"  // page: random colors screen test
 
 //#settings: empty, REPLACE THIS
 const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
@@ -85,32 +84,6 @@ const char* PAGE_MEASURE = "measure";
 const char* PAGE_ABOUT = "about";
 const char* PAGE_RANDOM = "random";
 const char* PAGE_KEYBOARD = "keyboard";
-
-// settings
-const char* PREFS = "aicu-settings";
-Preferences preferences;
-String deviceName = device.kind_short;
-const char* PREF_DNAME = "deviceName";
-void loadSettings() {
-  preferences.begin(PREFS, false); // false = r/w mode
-  deviceName = preferences.getString(PREF_DNAME, deviceName);
-  preferences.end();
-  if (VERBOSE) {
-    Serial.println("Loaded pref name: " + deviceName);
-  }
-}
-void saveSettings() {
-  preferences.begin(PREFS, false); // false = r/w mode
-  preferences.putString(PREF_DNAME, deviceName);
-  preferences.end();
-  if (VERBOSE) Serial.println("Prefs saved to mem!");
-}
-void clearSettings() {
-  preferences.begin(PREFS, false);
-  preferences.clear();
-  preferences.end();
-  Serial.println("Prefs cleared!");
-}
 
 // Menu & UI
 TFTMenu *mainMenu, *actionsMenu, *settingsMenu;
@@ -210,8 +183,6 @@ void plotScreen(int duration=1000) {
   delay(duration);
 }
 void setupMenus() {
-  loadSettings();
-  
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
@@ -298,7 +269,8 @@ void connectAPI() {
 }
 
 void registerAllSensors() {
-  // registerSensor(key, label, readFunc, min, max, color, enabled, showGraph)
+  // Parameters: (key, label, readFunc, min, max, color, enabled, showGraph)
+  
   sensors.registerSensor("left_button", "Button L", 
     [&]() { return digitalRead(LEFT_BUTTON) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_PURPLE, LOG_SEND, SHOW_GRAPH);
@@ -321,22 +293,12 @@ void registerAllSensors() {
     []() { return (double)getCpuFrequencyMhz(); },
     80, 240, TFT_YELLOW, LOG_SEND, HIDE_GRAPH);
   
-  // More sensors?
-  // Ex1) Custom analog sensor
-  // sensors.registerSensor("light", "Light",
-  //  []() { return analogRead(35) / 4095.0 * 100; },
-  //  0, 100, TFT_WHITE, LOG_SEND, SHOW_GRAPH);
+  // Want to add more sensors?
+  //   Ex1) Custom analog sensor
+  //      sensors.registerSensor("light", "Light", []() { return analogRead(35) / 4095.0 * 100; }, 0, 100, TFT_WHITE, LOG_SEND, SHOW_GRAPH);
+  //   Ex2) Not graphed, deactivated sensor
+  //      sensors.registerSensor("uptime", "Uptime (s)", []() { return millis() / 1000.0; }, 0, 86400, TFT_MAGENTA, LOG_NONE, HIDE_GRAPH);
   
-  // Ex2) Not graphed sensor
-  // sensors.registerSensor("uptime", "Uptime (s)",
-  //  []() { return millis() / 1000.0; },
-  //  0, 86400, TFT_MAGENTA, LOG_SEND, HIDE_GRAPH);
-  
-  // Ex3) Disabled sensor
-  // sensors.registerSensor("unused", "Unused",
-  //  []() { return 0.0; },
-  //  0, 1, TFT_WHITE, LOG_NONE, HIDE_GRAPH);
-
   if (VERBOSE) {
     Serial.print("Registered sensors: ");
     Serial.println(sensors.getEnabledCount());
@@ -439,13 +401,12 @@ void setupPageManager() {
             ).begin();
 }
 
-/**
- *  Aicuflow x Arduino Setup & Loop
-*/
+/* Aicuflow x Arduino Setup & Loop */
 void setup() {
   initPoints();
   initDeviceGPIOPins();
   initSerial();
+  loadSettings();
   
   if (!device.has_display) delay(1000);
   if (device.has_display)  initTFTScreen();
