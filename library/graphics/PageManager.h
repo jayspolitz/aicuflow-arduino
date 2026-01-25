@@ -59,6 +59,8 @@ public:
   bool isOnPage(const char* pageId) const;
   TFTMenu* getPreviousMenu() { return previousActiveMenu; }
   
+  bool screenAwake;
+
 private:
   struct PageConfig {
     std::function<void()> onOpen;
@@ -71,7 +73,6 @@ private:
   int leftButton, rightButton;
   int screenIdleMs;
   uint32_t lastInputMs;
-  bool screenAwake;
   
   std::map<String, PageConfig> pages;
   
