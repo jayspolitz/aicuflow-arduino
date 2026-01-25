@@ -85,7 +85,8 @@ TFTMenu* previouslyActiveMenu = nullptr;
 enum Page {
   PAGE_MENU,
   PAGE_MEASURE,
-  PAGE_ABOUT
+  PAGE_ABOUT,
+  PAGE_RANDOM
 };
 Page currentPage = PAGE_MENU;
 void openPage(Page p) {
@@ -171,6 +172,36 @@ void openAboutPage() {
   tft.setCursor(w - 90, h - 10);
   tft.print("Press any key");
 }
+/**
+ * Random Page
+ */
+void openRandomPage() {
+  openPage(PAGE_RANDOM);
+}
+void updateRandomPage() {
+  int w = tft.width();
+  int h = tft.height();
+
+  // Seed randomness (ESP32 has HW RNG, this just mixes a bit)
+  randomSeed(esp_random());
+
+  tft.startWrite();
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      uint16_t color = random(0xFFFF); // full 16-bit RGB565 space
+      tft.drawPixel(x, y, color);
+    }
+  }
+  tft.endWrite();
+
+  // Footer only (explicit positioning allowed)
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setCursor(4, h - 10);
+  tft.print("Press any key");
+  
+  returnToMenuIfButton();
+}
+
 
 /**
  *  Function definitions
@@ -295,6 +326,7 @@ void setupMenus() {
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
   actionsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
+  actionsMenu->addItem("Random", openRandomPage);
 
   // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
@@ -496,6 +528,8 @@ void loop() {
     delay(20);
   } else if (currentPage == PAGE_MEASURE) {
     updateMeasurementPage();
+  } else if (currentPage == PAGE_RANDOM) {
+    updateRandomPage();
   } else {
     returnToMenuIfButton();
     delay(20);
