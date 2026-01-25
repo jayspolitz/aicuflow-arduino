@@ -77,13 +77,6 @@ int screenWidth, screenHeight;
 int LEFT_BUTTON, RIGHT_BUTTON;
 static bool wifiAvailable = false;
 
-// page IDs
-const char* PAGE_MENU = "menu";
-const char* PAGE_MEASURE = "measure";
-const char* PAGE_ABOUT = "about";
-const char* PAGE_RANDOM = "random";
-const char* PAGE_KEYBOARD = "keyboard";
-
 // Menu & UI
 TFTMenu *mainMenu, *actionsMenu, *settingsMenu;
 TFTKeyboard* keyboard;
@@ -93,18 +86,18 @@ void setupMenus() {
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
   actionsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
-  actionsMenu->addItem("Random", []() { pageManager->openPage(PAGE_RANDOM); });
+  actionsMenu->addItem("Random", []() { pageManager->openPage("random"); });
   
   // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
   settingsMenu->addBackItem();
   settingsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
-  settingsMenu->addItem("Device Name", []() { pageManager->openPage(PAGE_KEYBOARD, (void*)1); }); // 1 = device name context
-  settingsMenu->addItem("About", []() { pageManager->openPage(PAGE_ABOUT); });
+  settingsMenu->addItem("Device Name", []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
+  settingsMenu->addItem("About", []() { pageManager->openPage("about"); });
   
   // main
   mainMenu = new TFTMenu(&tft, "Aicuflow IoT");
-  mainMenu->addItem("Start", []() { pageManager->openPage(PAGE_MEASURE); });
+  mainMenu->addItem("Start", []() { pageManager->openPage("measure"); });
   mainMenu->addSubmenu("Actions", actionsMenu);
   mainMenu->addSubmenu("Settings", settingsMenu);
   
@@ -364,13 +357,13 @@ void initTFTScreen() {
 }
 void setupPageManager() {
   pageManager = new PageManager(&tft, LEFT_BUTTON, RIGHT_BUTTON, SCREEN_IDLE_MS);
-  pageManager->registerPage(PAGE_MENU, onMenuPageOpen, []() { mainMenu->update(); })
-             .registerPage(PAGE_MEASURE, onMeasurePageOpen, onMeasurePageUpdate, 0, false) // no delay!
-             .registerPage(PAGE_ABOUT, onAboutPageOpen, checkButtonReturn)
-             .registerPage(PAGE_RANDOM, nullptr, []() { onRandomPageUpdate(); checkButtonReturn(); })
-             .registerPage(PAGE_KEYBOARD, onKeyboardPageOpen, []() { keyboard->update(); })
+  pageManager->registerPage("menu", onMenuPageOpen, []() { mainMenu->update(); })
+             .registerPage("measure", onMeasurePageOpen, onMeasurePageUpdate, 0, false) // no delay!
+             .registerPage("about", onAboutPageOpen, checkButtonReturn)
+             .registerPage("random", nullptr, []() { onRandomPageUpdate(); checkButtonReturn(); })
+             .registerPage("keyboard", onKeyboardPageOpen, []() { keyboard->update(); })
              .setDefaultPage(
-              device->has_display ? PAGE_MENU : PAGE_MEASURE // auto measure on no screen devices
+              device->has_display ? "menu" : "measure" // auto measure on no screen devices
             ).begin();
 }
 
