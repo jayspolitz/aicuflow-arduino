@@ -47,6 +47,7 @@
 #include "library/apps/boot.cpp"    // page: boot screen & setup
 #include "library/apps/about.cpp"   // page: about (message)
 #include "library/apps/random.cpp"  // page: random colors screen test
+#include "library/apps/wifiscan.cpp"  // page: wifi scan
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -63,7 +64,7 @@ const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
 const char* DEVICE_ID = "aicu0"; // if you have multiple devices
 const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.
 const int MEASURE_DELAY_MS = 100;
-const int SCREEN_IDLE_MS = 30000; // also needs TFT_BL eg 38
+const int SCREEN_IDLE_MS = 60000; // also needs TFT_BL eg 38
 const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
 //#endsettings: empty, REPLACE THIS
 
@@ -87,6 +88,7 @@ void setupMenus() {
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
   actionsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
+  actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
   actionsMenu->addItem("Random", []() { pageManager->openPage("random"); });
   
   // settings
@@ -379,6 +381,7 @@ void setup() {
   pageManager->registerPage("about", onAboutPageOpen, closePageIfAnyButtonIsPressed);
   pageManager->registerPage("random", nullptr, []() { onRandomPageUpdate(); closePageIfAnyButtonIsPressed(); });
   pageManager->registerPage("keyboard", onKeyboardPageOpen, []() { keyboard->update(); });
+  pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
