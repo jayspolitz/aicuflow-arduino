@@ -50,6 +50,8 @@
 #include "library/apps/random.cpp"  // page: random colors screen test
 #include "library/apps/wifiscan.cpp"  // page: wifi scan
 #include "library/apps/btscan.cpp"  // page: bluethooth scan
+#include "library/apps/colortest.cpp"  // page: gradient color test page
+#include "library/apps/colorwheeltest.cpp"  // page: color test page
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -97,7 +99,9 @@ void setupMenus() {
   actionsMenu->addBackItem();
   actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
   actionsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
-  actionsMenu->addItem("Random", []() { pageManager->openPage("random"); });
+  actionsMenu->addItem("Colortest", []() { pageManager->openPage("colors"); });
+  actionsMenu->addItem("Colorwheel", []() { pageManager->openPage("colorwheel"); });
+  actionsMenu->addItem("Random Color", []() { pageManager->openPage("random"); });
   
   // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
@@ -431,6 +435,8 @@ void setup() {
   pageManager->registerPage("keyboard", onKeyboardPageOpen, []() { keyboard->update(); });
   pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
   pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
+  pageManager->registerPage("colors", onColorTestPageOpen, onColorTestPageUpdate);
+  pageManager->registerPage("colorwheel", onColorWheelTestPageOpen, onColorWheelTestPageUpdate);
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
