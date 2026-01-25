@@ -243,7 +243,7 @@ void registerAllSensors() {
   sensors.registerSensor("right_button", "Button R",
     [&]() { return digitalRead(RIGHT_BUTTON) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
-  if (device->has_wifi) sensors.registerSensor("rssi", "RSSI (dBm)",
+  if (device->has_wifi && wifiAvailable) sensors.registerSensor("rssi", "RSSI (dBm)",
     []() { return (double)WiFi.RSSI(); },
     -100, -30, TFT_GREEN, LOG_SEND, SHOW_GRAPH);
   sensors.registerSensor("voltage", "Voltage (V)", // 2=ResDiv;3.3RefV;4095-12-bitADCres
