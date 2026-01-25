@@ -92,6 +92,7 @@ public:
   
   void addChar(String c);
   void deleteChar();
+  void resetButtonState();
   void clearText();
   void confirmText();
   

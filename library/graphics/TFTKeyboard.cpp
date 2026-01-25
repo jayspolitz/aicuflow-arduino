@@ -348,8 +348,15 @@ void TFTKeyboard::confirmText() {
   if (onConfirm) {
     onConfirm(currentText);
   }
-  // Serial.print("Confirmed: ");
-  // Serial.println(currentText);
+  Serial.print("Confirmed: ");
+  Serial.println(currentText);
+}
+
+void TFTKeyboard::resetButtonState() {
+  // Reset all button tracking variables
+  lastDebounceTime = millis();
+  bothPressStartTime = 0;
+  actionExecuted = false;
 }
 
 void TFTKeyboard::handleButtons() {
