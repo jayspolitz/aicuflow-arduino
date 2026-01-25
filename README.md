@@ -38,6 +38,8 @@ Short install guide:
    - ArduinoJSON
 4. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 
+In the main sketch (`aicuflow-arduino.ino`), search for **add more**, and you will find many options to add customisations (sensors, menus, pages).
+
 ## Setup troubleshooting
 
 ### Supported devices

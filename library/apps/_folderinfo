@@ -1,3 +1,5 @@
 in here are apps / pages from the main sketch.
 the core measurement we keep in `aicuflow-arduino.ino`
 but test / boot screens and similar stuff we keep here.
+
+Check `_expand.cpp` for a guide on adding custom applications.

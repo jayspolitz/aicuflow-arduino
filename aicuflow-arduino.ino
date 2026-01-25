@@ -19,16 +19,15 @@
  *  - Sensor data logging (TFT Screen)
  *  - Non-blocking 2 Core execution (0 measures, 1 talks)
  *
+ ******************************************************************
+ *
  *  To start, find `registerAllSensors` and try adding new ones!
+ *  Generally, search for "add more" and you find customisations!
+ *
+ ******************************************************************
  *
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
-
-/* (Helpful) Color pallette for tft screens:
- * TFT_BLACK, TFT_NAVY, TFT_DARKGREEN, TFT_DARKCYAN, TFT_MAROON,
- * TFT_PURPLE, TFT_OLIVE, TFT_LIGHTGREY, TFT_DARKGREY, TFT_BLUE,
- * TFT_GREEN, TFT_CYAN, TFT_RED, TFT_MAGENTA, TFT_YELLOW, TFT_WHITE,
- * TFT_ORANGE, TFT_GREENYELLOW, TFT_PINK */
 
 #include <TFT_eSPI.h>         // LIB NEED TO INSTALL v2.5.43 Bodmer, needs customisation
 #include <SPI.h>              // built-in periphery protocol
@@ -48,6 +47,8 @@
 #include "library/apps/boot.cpp"    // page: boot screen & setup
 #include "library/apps/about.cpp"   // page: about (message)
 #include "library/apps/random.cpp"  // page: random colors screen test
+// add more pages here
+// #include "library/apps/_expand.cpp" // page: custom page
 
 //#settings: empty, REPLACE THIS
 const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
@@ -100,6 +101,8 @@ void setupMenus() {
   mainMenu->addItem("Start", []() { pageManager->openPage("measure"); });
   mainMenu->addSubmenu("Actions", actionsMenu);
   mainMenu->addSubmenu("Settings", settingsMenu);
+  // add more menus here
+  // mainMenu->addItem("Custom Page", []() { pageManager->openPage("[appname]"); });
   
   // keyboard
   keyboard = new TFTKeyboard(&tft, "Enter Text");
@@ -109,7 +112,7 @@ void setupMenus() {
   // after all propagate
   mainMenu->propagateButtonPins(LEFT_BUTTON, RIGHT_BUTTON);
 }
-void checkButtonReturn() {
+void closePageIfAnyButtonIsPressed() {
   if (digitalRead(LEFT_BUTTON) == LOW || digitalRead(RIGHT_BUTTON) == LOW) {
     pageManager->returnToPrevious();
   }
@@ -355,17 +358,6 @@ void initTFTScreen() {
   pinMode(TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH); // screen on
 }
-void setupPageManager() {
-  pageManager = new PageManager(&tft, LEFT_BUTTON, RIGHT_BUTTON, SCREEN_IDLE_MS);
-  pageManager->registerPage("menu", onMenuPageOpen, []() { mainMenu->update(); })
-             .registerPage("measure", onMeasurePageOpen, onMeasurePageUpdate, 0, false) // no delay!
-             .registerPage("about", onAboutPageOpen, checkButtonReturn)
-             .registerPage("random", nullptr, []() { onRandomPageUpdate(); checkButtonReturn(); })
-             .registerPage("keyboard", onKeyboardPageOpen, []() { keyboard->update(); })
-             .setDefaultPage(
-              device->has_display ? "menu" : "measure" // auto measure on no screen devices
-            ).begin();
-}
 
 /* Aicuflow x Arduino Setup & Loop */
 void setup() {
@@ -381,9 +373,19 @@ void setup() {
   if (device->has_display)  bootScreen(3000);
   if (device->has_display)  setupMenus();
   
-  setupPageManager();
+  pageManager = new PageManager(&tft, LEFT_BUTTON, RIGHT_BUTTON, SCREEN_IDLE_MS);
+  pageManager->registerPage("menu", onMenuPageOpen, []() { mainMenu->update(); });
+  pageManager->registerPage("measure", onMeasurePageOpen, onMeasurePageUpdate, 0, false); // no delay!
+  pageManager->registerPage("about", onAboutPageOpen, closePageIfAnyButtonIsPressed);
+  pageManager->registerPage("random", nullptr, []() { onRandomPageUpdate(); closePageIfAnyButtonIsPressed(); });
+  pageManager->registerPage("keyboard", onKeyboardPageOpen, []() { keyboard->update(); });
+  // add more apps here, see `library/apps/_expand.cpp`
+  // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
+
+  pageManager->setDefaultPage(device->has_display ? "menu" : "measure");
+  pageManager->begin();
 }
 
 void loop() {
-  pageManager->update(); // render individual menus and pages
+  pageManager->update(); // render menus, pages / apps
 }

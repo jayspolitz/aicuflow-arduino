@@ -119,6 +119,7 @@ bool TFTMenu::isActive() {
 
 void TFTMenu::draw() {
   tft->fillScreen(bgColor);
+  tft->setTextSize(1);
   drawHeader();
   
   // Draw visible items
