@@ -54,6 +54,7 @@
 #include "library/apps/colorwheeltest.cpp"  // page: color test page
 #include "library/apps/snakegame.cpp"  // page: snake game
 #include "library/apps/gol.cpp"  // page: conways game of life
+#include "library/apps/mandelbrot.cpp"  // page: mandelbrot set render
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -99,6 +100,7 @@ void setupMenus() {
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
+  actionsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
   actionsMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
   actionsMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
   actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
@@ -443,6 +445,7 @@ void setup() {
   pageManager->registerPage("colorwheel", onColorWheelTestPageOpen, onColorWheelTestPageUpdate);
   pageManager->registerPage("snake", onSnakeGamePageOpen, onSnakeGamePageUpdate);
   pageManager->registerPage("gol", onGameOfLifePageOpen, onGameOfLifePageUpdate);
+  pageManager->registerPage("mandelbrot", onMandelbrotPageOpen, onMandelbrotPageUpdate);
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
