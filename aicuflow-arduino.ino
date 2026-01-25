@@ -36,11 +36,13 @@
 #include <esp_wifi.h>  // esp_wifi_set_max_tx_power(52); // ca 13dBm
 #include <HTTPClient.h>
 #include <ArduinoJson.h> // 7.4.2 by Benoit
+#include <Preferences.h>  // ESP32 built-in lib
 
 #include "library/device/DeviceProps.cpp"
 #include "library/aicuflow/AicuClient.cpp"
 #include "library/sensors/SensorMeasurement.cpp"
 #include "library/graphics/TFTMenuModern.cpp"    // TFTMenuModern or TFTMenu
+#include "library/graphics/TFTKeyboard.cpp"
 #include "library/graphics/aicuflow_logo_64px.h" // aicuflow_logo
 #include "library/graphics/aicuflow_logo_wide.h" // aicuflow_logo_wide
 
@@ -74,6 +76,44 @@ static uint32_t lastInputMs = 0;
 static bool screenAwake = true;
 static bool wifiAvailable = false;
 
+// enums need to be high up or build fails
+enum Page {
+  PAGE_MENU,
+  PAGE_MEASURE,
+  PAGE_ABOUT,
+  PAGE_RANDOM,
+  PAGE_KEYBOARD
+};
+enum KeyboardContext {
+  CONTEXT_DEVICE_NAME
+};
+
+// settings
+const char* PREFS = "aicu-settings";
+Preferences preferences;
+String deviceName = device.kind_short;
+const char* PREF_DNAME = "deviceName";
+void loadSettings() {
+  preferences.begin(PREFS, false); // false = r/w mode
+  deviceName = preferences.getString(PREF_DNAME, deviceName);
+  preferences.end();
+  if (VERBOSE) {
+    Serial.println("Loaded pref name: " + deviceName);
+  }
+}
+void saveSettings() {
+  preferences.begin(PREFS, false); // false = r/w mode
+  preferences.putString(PREF_DNAME, deviceName);
+  preferences.end();
+  if (VERBOSE) Serial.println("Prefs saved to mem!");
+}
+void clearSettings() {
+  preferences.begin(PREFS, false);
+  preferences.clear();
+  preferences.end();
+  Serial.println("Prefs cleared!");
+}
+
 /**
  * Menu and Page logic
  * for TFT Screen controls
@@ -82,16 +122,20 @@ TFTMenu *mainMenu;
 TFTMenu *actionsMenu;
 TFTMenu *settingsMenu;
 TFTMenu* previouslyActiveMenu = nullptr;
-enum Page {
-  PAGE_MENU,
-  PAGE_MEASURE,
-  PAGE_ABOUT,
-  PAGE_RANDOM
-};
 Page currentPage = PAGE_MENU;
 void openPage(Page p) {
   previouslyActiveMenu = TFTMenu::currentActiveMenu;
   currentPage = p;
+}
+bool blockInput = false; // block input after page changes
+unsigned long blockInputUntil = 0;
+void blockInputFor(unsigned long ms) {
+  blockInput = true;
+  blockInputUntil = millis() + ms;
+}
+bool isInputBlocked() {
+  if (blockInput && millis() >= blockInputUntil) blockInput = false;
+  return blockInput;
 }
 void returnToMenu() {
   // restore last menu
@@ -109,6 +153,26 @@ void returnToMenuIfButton() {
     digitalRead(LEFT_BUTTON) == LOW ||
     digitalRead(RIGHT_BUTTON) == LOW
   ) returnToMenu();
+}
+// kbd
+TFTKeyboard* keyboard;
+KeyboardContext currentKeyboardContext;
+void openNameKeyboard() {
+  currentKeyboardContext = CONTEXT_DEVICE_NAME;
+  openPage(PAGE_KEYBOARD);
+  keyboard->setText(deviceName);
+  tft.fillScreen(TFT_BLACK);
+  keyboard->begin();
+  blockInputFor(300);
+}
+void onTextConfirmed(String text) {
+  if (currentKeyboardContext == CONTEXT_DEVICE_NAME) {
+    deviceName = text;
+    if(VERBOSE) Serial.println("Saved: " + deviceName);
+  }
+  saveSettings();
+  returnToMenu();
+  blockInputFor(300);
 }
 
 /**
@@ -322,6 +386,8 @@ void plotScreen(int duration=1000) {
   delay(duration);
 }
 void setupMenus() {
+  loadSettings();
+
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
@@ -332,6 +398,7 @@ void setupMenus() {
   settingsMenu = new TFTMenu(&tft, "Settings");
   settingsMenu->addBackItem();
   settingsMenu->setColors(TFT_BLACK, TFT_DARKGREEN, TFT_WHITE, TFT_WHITE);
+  settingsMenu->addItem("Device Name", openNameKeyboard);
   settingsMenu->addItem("About", openAboutPage);
   
   // main
@@ -339,6 +406,11 @@ void setupMenus() {
   mainMenu->addItem("Start", openMeasurementPage);
   mainMenu->addSubmenu("Actions", actionsMenu);
   mainMenu->addSubmenu("Settings", settingsMenu);
+
+  // keyboard
+  keyboard = new TFTKeyboard(&tft, "Enter Text");
+  keyboard->setButtonPins(LEFT_BUTTON, RIGHT_BUTTON);
+  keyboard->setOnConfirm(onTextConfirmed);
   
   // after all propagate
   mainMenu->propagateButtonPins(LEFT_BUTTON, RIGHT_BUTTON);
@@ -523,15 +595,23 @@ void updateMeasurementPage() {
 }
 
 void loop() {
+  if (isInputBlocked()) {
+    delay(20);
+    return;
+  }
+
   if (currentPage == PAGE_MENU) {
     mainMenu->update();
-    delay(20);
+  } else if (currentPage == PAGE_KEYBOARD) {
+    keyboard->update();
   } else if (currentPage == PAGE_MEASURE) {
     updateMeasurementPage();
+    return; // no delay
   } else if (currentPage == PAGE_RANDOM) {
     updateRandomPage();
   } else {
     returnToMenuIfButton();
-    delay(20);
   }
+
+  delay(20);
 }
