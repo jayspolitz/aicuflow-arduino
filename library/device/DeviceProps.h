@@ -15,6 +15,7 @@ enum class DeviceFamily : uint8_t {
 struct DeviceProps {
   DeviceFamily family;
   const char* kind_slug;
+  const char* kind_short;
 
   bool has_display;
   bool has_wifi;
