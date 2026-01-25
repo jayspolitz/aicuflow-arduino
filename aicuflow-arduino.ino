@@ -1,7 +1,7 @@
 /**
  *  Aicuflow AI Flow Builder + Arduino ESP32 Quickstart
  *
- *  Created: 20260121-24, by Finn Glas @ AICU GmbH
+ *  Created: 20260121-26, by Finn Glas @ AICU GmbH
  *
  *  This sketch helps you stream data to the aicuflow platform easily.
  *  Just provide credentials, and all available sensor data is sent.
@@ -55,6 +55,7 @@
 #include "library/apps/snakegame.cpp"  // page: snake game
 #include "library/apps/gol.cpp"  // page: conways game of life
 #include "library/apps/mandelbrot.cpp"  // page: mandelbrot set render
+#include "library/apps/wireframe3d.cpp"  // page: 3d rotation renderer
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -100,6 +101,7 @@ void setupMenus() {
   // actions
   actionsMenu = new TFTMenu(&tft, "Actions");
   actionsMenu->addBackItem();
+  actionsMenu->addItem("3D Objects", []() { pageManager->openPage("3d"); });
   actionsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
   actionsMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
   actionsMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
@@ -446,6 +448,7 @@ void setup() {
   pageManager->registerPage("snake", onSnakeGamePageOpen, onSnakeGamePageUpdate);
   pageManager->registerPage("gol", onGameOfLifePageOpen, onGameOfLifePageUpdate);
   pageManager->registerPage("mandelbrot", onMandelbrotPageOpen, onMandelbrotPageUpdate);
+  pageManager->registerPage("3d", onWireframe3dPageOpen, onWireframe3dPageUpdate);
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
