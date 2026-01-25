@@ -43,6 +43,7 @@
 #include "library/sensors/SensorMeasurement.cpp" // sensor registry for measuring, plots and saving
 #include "library/graphics/TFTKeyboard.cpp"      // enter strings using buttons (cool)
 #include "library/graphics/PageManager.cpp"      // multi-page app on screens
+#include "library/graphics/closeFunctions.cpp"   // for close timing & recognition
 
 #include "library/apps/boot.cpp"    // page: boot screen & setup
 #include "library/apps/about.cpp"   // page: about (message)
@@ -128,11 +129,6 @@ void setupMenus() {
   
   // after all propagate
   mainMenu->propagateButtonPins(LEFT_BUTTON, RIGHT_BUTTON);
-}
-void closePageIfAnyButtonIsPressed() {
-  if (digitalRead(LEFT_BUTTON) == LOW || digitalRead(RIGHT_BUTTON) == LOW) {
-    pageManager->returnToPrevious();
-  }
 }
 void onMenuPageOpen() {
   tft.fillScreen(TFT_BLACK);
@@ -342,7 +338,7 @@ void onMeasurePageOpen() {
   if (device->has_wifi)     connectWifiOrTimeout();
   if (device->has_wifi && wifiAvailable) connectAPI();
 
-  registerAllSensors();
+  if (!sensors.getEnabledCount()) registerAllSensors();
   if (device->has_display)  initSensorGraphs();
   
   if (device->has_wifi) {
@@ -365,6 +361,8 @@ void onMeasurePageUpdate() {
   if (pageManager->screenAwake && device->has_display) // save energy
                                          sensors.updateGraphs();
   if (wifiAvailable && device->has_wifi)  addSampleAndAutoSend();
+
+  closePageIfBothLongPressed();
 }
 
 // initing
