@@ -106,6 +106,8 @@ For other boards, you just search the board / display name in the setup file. It
 
 - **Compile error** with tft on non-tft devices containing `gpio_input_get` -> compile on arduino platform `esp32:esp32@2.0.17` instead of the default `3.1.0` (everything should work on there too, but imports are a bit different)
 
+- **Sketch too large** - this can happen if your boards partition scheme (in menu `Tool>Partition Scheme`) is defined wrongly (for example on the ttgo-t1). You can resolve it easily by switching to `Huge App` or another larger scheme that has less file system reservations.
+
 ## Roadmap
 
 This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) is quite new. So lots to do.
