@@ -10,6 +10,8 @@ TFTMenu::TFTMenu(TFT_eSPI* display, String menuTitle) {
   parentMenu = nullptr;
   activeMenu = nullptr;
   scrollOffset = 0;
+  previousSelectedIndex = 0;
+  previousScrollOffset = 0;
   
   // Default colors (minimal black & white theme)
   bgColor = TFT_BLACK;
@@ -107,6 +109,8 @@ void TFTMenu::begin() {
   setActive();  // Mark this menu as the active one
   tft->fillScreen(bgColor);
   draw();
+  previousSelectedIndex = selectedIndex;
+  previousScrollOffset = scrollOffset;
 }
 
 void TFTMenu::setActive() {
@@ -118,8 +122,6 @@ bool TFTMenu::isActive() {
 }
 
 void TFTMenu::draw() {
-  tft->fillScreen(bgColor);
-  tft->setTextSize(1);
   drawHeader();
   
   // Calculate if we should center items vertically
@@ -232,6 +234,50 @@ void TFTMenu::ensureSelectedVisible() {
     scrollOffset = selectedIndex - visibleItems + 1;
   }
 }
+void TFTMenu::updateSelection() {
+  // Recompute centered startY exactly like draw()
+  int availableHeight = screenHeight - headerHeight;
+  if (showControls) availableHeight -= controlsHeight;
+
+  int totalItemsHeight = items.size() * itemHeight;
+  int startY = headerHeight;
+
+  if (totalItemsHeight < availableHeight) {
+    startY = headerHeight + (availableHeight - totalItemsHeight) / 2;
+  }
+
+  // If scroll position changed, redraw all visible items
+  if (scrollOffset != previousScrollOffset) {
+    int startIdx = scrollOffset;
+    int endIdx = min(scrollOffset + visibleItems, (int)items.size());
+
+    for (int i = startIdx; i < endIdx; i++) {
+      int yPos = startY + (i - scrollOffset) * itemHeight;
+      drawMenuItem(i, yPos, i == selectedIndex);
+    }
+
+    previousScrollOffset = scrollOffset;
+    previousSelectedIndex = selectedIndex;
+    return;
+  }
+
+  // No scroll change – redraw only affected items
+  if (selectedIndex != previousSelectedIndex) {
+    if (previousSelectedIndex >= scrollOffset &&
+        previousSelectedIndex < scrollOffset + visibleItems) {
+      int yPos = startY + (previousSelectedIndex - scrollOffset) * itemHeight;
+      drawMenuItem(previousSelectedIndex, yPos, false);
+    }
+
+    if (selectedIndex >= scrollOffset &&
+        selectedIndex < scrollOffset + visibleItems) {
+      int yPos = startY + (selectedIndex - scrollOffset) * itemHeight;
+      drawMenuItem(selectedIndex, yPos, true);
+    }
+
+    previousSelectedIndex = selectedIndex;
+  }
+}
 
 void TFTMenu::next() {
   selectedIndex++;
@@ -241,7 +287,7 @@ void TFTMenu::next() {
   } else {
     ensureSelectedVisible();
   }
-  draw();
+  updateSelection();
 }
 
 void TFTMenu::previous() {
@@ -252,7 +298,7 @@ void TFTMenu::previous() {
   } else {
     ensureSelectedVisible();
   }
-  draw();
+  updateSelection();
 }
 
 void TFTMenu::select() {

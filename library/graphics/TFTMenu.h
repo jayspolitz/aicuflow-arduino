@@ -39,6 +39,7 @@ private:
   TFT_eSPI* tft;
   std::vector<MenuItem*> items;
   int selectedIndex;
+  int previousSelectedIndex;
   TFTMenu* parentMenu;
   TFTMenu* activeMenu;  // Track which menu is actually active
   
@@ -59,6 +60,7 @@ private:
   int screenHeight;
   int visibleItems;
   int scrollOffset;
+  int previousScrollOffset;
   
   // Button state
   unsigned long lastDebounceTime;
@@ -95,6 +97,7 @@ public:
   void begin();
   void draw();
   void update();
+  void updateSelection();
   
   // Navigation
   void next();

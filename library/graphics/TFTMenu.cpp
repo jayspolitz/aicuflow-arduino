@@ -10,6 +10,8 @@ TFTMenu::TFTMenu(TFT_eSPI* display, String menuTitle) {
   parentMenu = nullptr;
   activeMenu = nullptr;
   scrollOffset = 0;
+  previousSelectedIndex = 0;
+  previousScrollOffset = 0;
   
   // Default colors (dark theme)
   bgColor = TFT_BLACK;
@@ -107,6 +109,8 @@ void TFTMenu::begin() {
   setActive();  // Mark this menu as the active one
   tft->fillScreen(bgColor);
   draw();
+  previousSelectedIndex = selectedIndex;
+  previousScrollOffset = scrollOffset;
 }
 
 void TFTMenu::setActive() {
@@ -118,8 +122,6 @@ bool TFTMenu::isActive() {
 }
 
 void TFTMenu::draw() {
-  tft->fillScreen(bgColor);
-  tft->setTextSize(1);
   drawHeader();
   
   // Draw visible items
@@ -204,6 +206,41 @@ void TFTMenu::ensureSelectedVisible() {
   }
 }
 
+void TFTMenu::updateSelection() {
+  // Check if scroll position changed - if so, redraw all items
+  if (scrollOffset != previousScrollOffset) {
+    // Scroll changed - redraw all visible items
+    int startIdx = scrollOffset;
+    int endIdx = min(scrollOffset + visibleItems, (int)items.size());
+    
+    for (int i = startIdx; i < endIdx; i++) {
+      int yPos = headerHeight + (i - scrollOffset) * itemHeight;
+      drawMenuItem(i, yPos, i == selectedIndex);
+    }
+    
+    previousScrollOffset = scrollOffset;
+    previousSelectedIndex = selectedIndex;
+    return;
+  }
+  
+  // No scroll change - just update the two affected items
+  if (selectedIndex != previousSelectedIndex) {
+    // Redraw previously selected item (now unselected)
+    if (previousSelectedIndex >= scrollOffset && previousSelectedIndex < scrollOffset + visibleItems) {
+      int yPos = headerHeight + (previousSelectedIndex - scrollOffset) * itemHeight;
+      drawMenuItem(previousSelectedIndex, yPos, false);
+    }
+    
+    // Redraw newly selected item
+    if (selectedIndex >= scrollOffset && selectedIndex < scrollOffset + visibleItems) {
+      int yPos = headerHeight + (selectedIndex - scrollOffset) * itemHeight;
+      drawMenuItem(selectedIndex, yPos, true);
+    }
+    
+    previousSelectedIndex = selectedIndex;
+  }
+}
+
 void TFTMenu::next() {
   selectedIndex++;
   if (selectedIndex >= items.size()) {
@@ -212,7 +249,7 @@ void TFTMenu::next() {
   } else {
     ensureSelectedVisible();
   }
-  draw();
+  updateSelection();
 }
 
 void TFTMenu::previous() {
@@ -223,7 +260,7 @@ void TFTMenu::previous() {
   } else {
     ensureSelectedVisible();
   }
-  draw();
+  updateSelection();
 }
 
 void TFTMenu::select() {
@@ -234,14 +271,13 @@ void TFTMenu::select() {
   if (item->type == MENU_ITEM_ACTION && item->action) {
     item->action();
   } else if (item->type == MENU_ITEM_SUBMENU && item->submenu) {
-    item->submenu->begin();  // This will set the submenu as active
+    item->submenu->begin();
   } else if (item->type == MENU_ITEM_BACK && parentMenu) {
-    parentMenu->begin();  // This will set the parent as active
+    parentMenu->begin();
   }
 }
 
 void TFTMenu::handleButtons() {
-  // Don't check isActive here - update() already routes to the right menu
   if (leftButtonPin < 0 || rightButtonPin < 0) return;
   
   static unsigned long leftPressTime = 0;

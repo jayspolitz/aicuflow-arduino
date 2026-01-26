@@ -24,7 +24,7 @@
 // UI / App Core of this Sketch
 
 void setupMenus() {
-  const char* s_back = en_de("Back", "Hoch");
+  const char* s_back = en_de("Back", "Zurueck");
   // connection tools
   connectToolsMenu = new TFTMenu(&tft, en_de("Wireless", "Funk"));
   connectToolsMenu->addBackItem(s_back);
