@@ -64,6 +64,10 @@ void clearSettings() {
   if (VERBOSE) Serial.println("Prefs cleared!");
 }
 
+void applySettings() {
+  sensors.deviceId = deviceName.c_str();
+}
+
 const char* en_de(const char* en, const char* de) {
     return (locale == "de") ? de : en;
 }

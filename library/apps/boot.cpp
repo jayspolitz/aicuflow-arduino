@@ -20,7 +20,7 @@ void plotScreen(int duration=1000) {
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK); // details
   tft.println(en_de("Aicu IoT+AI Endpoint", "Aicu IoT+KI Endpoint"));
-  tft.print(en_de("Hardware: ", "Hardware: ")); tft.println(device->kind_slug);
+  tft.print(en_de("Board: ", "Board: ")); tft.println(device->kind_slug);
   tft.println("https://aicuflow.com");
   tft.println("");
   delay(duration);
@@ -67,5 +67,27 @@ void initDeviceGPIOPins() {
 
     // power up
     esp_wifi_set_max_tx_power(52); // ca 13dBm
+  }
+}
+
+// boot fkts related to measurement displaying
+void initSensorGraphs() {
+  if (device->kind_slug == "lilygo-t-display-s3")
+    sensors.setGraphSpacing(22, 5);
+  else sensors.setGraphSpacing(14, 3);
+  if (device->has_wifi && wifiAvailable){
+    tft.setTextColor(TFT_CYAN);
+    tft.print(en_de("Sending to ", "Sende an ")); tft.print(streamFileName); tft.println(".arrow");
+    tft.setTextColor(TFT_WHITE);
+  }
+  else {
+    tft.setTextColor(TFT_YELLOW);
+    tft.println(en_de("Measuring without sending...", "Messung ohne zu senden..."));
+    tft.setTextColor(TFT_WHITE);
+  }
+  sensors.initGraphs(&tft, screenWidth, screenHeight);
+  if (VERBOSE) {
+    Serial.print("Graphed sensors: ");
+    Serial.println(sensors.getGraphCount());
   }
 }

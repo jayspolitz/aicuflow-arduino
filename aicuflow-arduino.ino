@@ -35,7 +35,6 @@
 #include <WiFiClientSecure.h> // alt (insecure): #include <WiFiClient.h>
 #include <HTTPClient.h>       // built-in webbrowser :)
 #include <ArduinoJson.h>      // LIB NEED TO INSTALL 7.4.2 by Benoit
-#include <esp_wifi.h>         // some esp32 boards need: esp_wifi_set_max_tx_power(52); // ca 13dBm
 
 #include "library/device/DeviceProps.cpp"        // device detection
 #include "library/device/Settings.cpp"           // persistent settings
@@ -46,6 +45,7 @@
 #include "library/graphics/closeFunctions.cpp"   // for close timing & recognition
 
 #include "library/apps/boot.cpp"    // page: boot screen & setup
+#include "library/apps/measurement.cpp"  // page: measurement helpers
 #include "library/apps/about.cpp"   // page: about (message)
 #include "library/apps/random.cpp"  // page: random colors screen test
 #include "library/apps/wifiscan.cpp"  // page: wifi scan
@@ -87,11 +87,7 @@ SensorMeasurement sensors("dev");
 const DeviceProps* device = nullptr;
 int screenWidth, screenHeight;
 int LEFT_BUTTON, RIGHT_BUTTON;
-static bool wifiAvailable = false;
-
-void applySettings() {
-  sensors.deviceId = deviceName.c_str();
-}
+bool wifiAvailable = false;
 
 // Menu & UI
 TFTMenu *mainMenu, *toolsMenu, *gamesMenu, *graphicsMenu, *connectToolsMenu;
@@ -209,112 +205,6 @@ void onTextConfirmed(String text) {
   pageManager->blockInputFor(300);
 }
 
-// measurement: json collect & stream, dtype
-static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2);
-static JsonArray arr;
-static uint16_t count = 0;
-static int32_t PERIOD_US = MEASURE_DELAY_MS * 1000UL;
-void initPoints() {
-  points.clear();
-  arr = points.to<JsonArray>();
-  count = 0;
-}
-struct JsonBatch { DynamicJsonDocument* doc; };
-QueueHandle_t flushQueue; // Async queue for sending
-void flushSamplesAsync() {
-  if (count == 0) return;
-  DynamicJsonDocument* batch =
-    new DynamicJsonDocument(points.memoryUsage() + 384 * POINTS_BATCH_SIZE * 2);
-  *batch = points; // deep copy
-  JsonBatch jb{ batch };
-  if (xQueueSend(flushQueue, &jb, 0) != pdTRUE) {
-    delete batch; // drop if queue full
-  }
-  points.clear();
-  arr = points.to<JsonArray>();
-  count = 0;
-}
-void addSampleAndAutoSend() {
-  JsonObject obj = arr.createNestedObject();
-  sensors.toJson(obj);
-  if (++count >= POINTS_BATCH_SIZE) flushSamplesAsync();
-}
-void sendTask(void* parameter) {
-  // async Send Task (Core 1 on ESP32)
-  // this is used so we don't see the graph stutter
-  JsonBatch jb;
-  for (;;) {
-    if (xQueueReceive(flushQueue, &jb, portMAX_DELAY) == pdTRUE) {
-      aicu.sendTimeseriesPoints(aicuFlow, streamFileName, *jb.doc);
-      delete jb.doc; // free memory
-    }
-  }
-}
-
-// connecting
-void connectWifiOrTimeout() {
-  if (device->has_display) tft.print(en_de("Connecting...", "Verbinden..."));
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(wlanSSID, wlanPass);
-
-  // try to connect (until timeout)
-  unsigned long start = millis();
-  while (
-    (WiFi.status() != WL_CONNECTED) // not connected
-    && (!WIFI_TIMEOUT || (millis() - start < WIFI_TIMEOUT)) // timeout
-  ) {
-    delay(500);
-    if (device->has_display) tft.print("."); // Loading progress
-  }
-
-  // no connection = off
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
-    wifiAvailable = false;
-    tft.print("\n");
-    tft.setTextColor(TFT_RED);
-    tft.println(en_de("WiFi failed :/", "Wlan fehlgeschlagen"));
-    tft.setTextColor(TFT_WHITE);
-    return;
-  } else { // connected = on
-    wifiAvailable = true;
-  }
-
-  // set up wifi stuff
-  client.setInsecure(); // TLS workaround
-  aicu.setWiFiClient(&client);
-  
-  // print
-  if (wifiAvailable && device->has_display) {
-    tft.print("\n");
-    tft.setTextColor(TFT_GREEN);
-    tft.print(en_de("WiFi: ", "Wlan:")); 
-    tft.println(WiFi.localIP());
-    tft.setTextColor(TFT_WHITE);
-  } else if (device->has_display) tft.print("\n");
-  Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
-  delay(500);
-}
-void connectAPI() {
-  if (!aicu.login(aicuMail, aicuPass)) {
-    if (device->has_display){
-      tft.setTextColor(TFT_RED);
-      tft.println(en_de("Login failed! :/", "Anmeldefehler! :/"));
-      tft.setTextColor(TFT_WHITE);
-    }
-    Serial.println("Login failed!");
-    return;
-  } else {
-    if (device->has_display){
-      tft.setTextColor(TFT_GREEN);
-      tft.println(en_de("Aicuflow connected!", "Aicuflow verbunden!"));
-      tft.setTextColor(TFT_WHITE);
-    }
-    Serial.println("Login success!");
-  }
-}
-
 void registerAllSensors() {
   // Parameters: (key, label, readFunc, min, max, color, enabled, showGraph)
   
@@ -351,58 +241,15 @@ void registerAllSensors() {
     Serial.println(sensors.getEnabledCount());
   }
 }
-void initSensorGraphs() {
-  if (device->kind_slug == "lilygo-t-display-s3")
-    sensors.setGraphSpacing(22, 5);
-  else sensors.setGraphSpacing(14, 3);
-  if (device->has_wifi && wifiAvailable){
-    tft.setTextColor(TFT_CYAN);
-    tft.print(en_de("Sending to ", "Sende an ")); tft.print(streamFileName); tft.println(".arrow");
-    tft.setTextColor(TFT_WHITE);
-  }
-  else {
-    tft.setTextColor(TFT_YELLOW);
-    tft.println(en_de("Measuring without sending...", "Messung ohne zu senden..."));
-    tft.setTextColor(TFT_WHITE);
-  }
-  sensors.initGraphs(&tft, screenWidth, screenHeight);
-  if (VERBOSE) {
-    Serial.print("Graphed sensors: ");
-    Serial.println(sensors.getGraphCount());
-  }
-}
 
 // Measurement page handlers
-void onMeasurePageOpen() {
-  if (device->has_display)  plotScreen(1000);
-  if (device->has_wifi)     connectWifiOrTimeout();
+void measurementSetup() {
+  if (device->has_display)               plotScreen(1000);
+  if (device->has_wifi)                  connectWifiOrTimeout();
   if (device->has_wifi && wifiAvailable) connectAPI();
-
-  if (!sensors.getEnabledCount()) registerAllSensors();
-  if (device->has_display)  initSensorGraphs();
-  
-  if (device->has_wifi) {
-    flushQueue = xQueueCreate(8, sizeof(JsonBatch));
-    xTaskCreatePinnedToCore(sendTask, "sendTask", 8192, NULL, 1, NULL, 1);
-  }
-}
-void onMeasurePageUpdate() {
-  // Precise time
-  static uint32_t next = micros();
-  uint32_t now = micros();
-  if ((int32_t)(now - next) < 0) return;
-  next += PERIOD_US;
-
-  // Measure Data
-  sensors.measure();
-
-  // Forward Data
-  if (VERBOSE && !device->has_display)    sensors.printValues(); // May be BLOCKING!
-  if (pageManager->screenAwake && device->has_display) // save energy
-                                         sensors.updateGraphs();
-  if (wifiAvailable && device->has_wifi)  addSampleAndAutoSend();
-
-  closePageIfBothLongPressed();
+  if (!sensors.getEnabledCount())        registerAllSensors();
+  if (device->has_display)               initSensorGraphs();
+  if (device->has_wifi)                  startCPUSendTask();
 }
 
 /* Aicuflow x Arduino Setup & Loop */
@@ -422,7 +269,7 @@ void setup() {
   
   pageManager = new PageManager(&tft, LEFT_BUTTON, RIGHT_BUTTON, SCREEN_IDLE_MS);
   pageManager->registerPage("menu", onMenuPageOpen, []() { mainMenu->update(); });
-  pageManager->registerPage("measure", onMeasurePageOpen, onMeasurePageUpdate, 0, false); // no delay!
+  pageManager->registerPage("measure", measurementSetup, onMeasurePageUpdate, 0, false); // no delay!
   pageManager->registerPage("about", onAboutPageOpen, closePageIfAnyButtonIsPressed);
   pageManager->registerPage("random", nullptr, []() { onRandomPageUpdate(); closePageIfAnyButtonIsPressed(); });
   pageManager->registerPage("keyboard", onKeyboardPageOpen, []() { keyboard->update(); });

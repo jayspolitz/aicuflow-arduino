@@ -1,4 +1,6 @@
 #pragma once
+#ifndef AICU_CLIENT_H
+#define AICU_CLIENT_H
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
@@ -37,3 +39,4 @@ private:
     bool _postJson(const String& path, JsonDocument& payload); // ohne Response
     bool _del(const String& path);
 };
+#endif
