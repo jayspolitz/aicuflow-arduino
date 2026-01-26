@@ -17,6 +17,7 @@
 #include "library/apps/gol.cpp"  // page: conways game of life
 #include "library/apps/mandelbrot.cpp"  // page: mandelbrot set render
 #include "library/apps/wireframe3d.cpp"  // page: 3d rotation renderer
+#include "library/apps/aicuflow_tutorial.cpp"  // page: tutorial
 // add more pages here
 // #include "library/apps/_expand.cpp" // page: custom page
 
@@ -79,6 +80,7 @@ void setupMenus() {
   
   // main
   mainMenu = new TFTMenu(&tft, en_de("Aicuflow IoT+AI", "Aicuflow IoT+KI"));
+  mainMenu->addItem(en_de("Tutorial", "Einführung"), []() { pageManager->openPage("tutorial"); });
   mainMenu->addItem(en_de("Start", "Start"), []() { pageManager->openPage("measure"); });
   mainMenu->addSubmenu(en_de("Tools", "Tools"), toolsMenu);
   mainMenu->addSubmenu(en_de("Setup", "Setup"), settingsMenu);
@@ -103,6 +105,7 @@ void setupPages() {
   
   pageManager->registerPage("measure", measurementSetup, onMeasurePageUpdate, 0, false); // no delay!
   pageManager->registerPage("about", onAboutPageOpen, closePageIfAnyButtonIsPressed);
+  pageManager->registerPage("tutorial", onAicuflowTutorialPageOpen, onAicuflowTutorialPageUpdate);
   
   pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
   pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
