@@ -1,0 +1,84 @@
+Use the following code header and cpp snippets from arduino esp32 to create a similar application, but for another purpose. This purpose is written at the end of this text/ prompt by the user.
+
+make sure you do not change the library imports except for when adding built in esp32 or arduino libs that require no installation. in case something needs, tell the user after your codesnippet how to install the new one.
+
+Keep about the structure of code and ensure there is a prefix/ app specific string part to all functions and vars. Eg in this example `BT` is a bit too short, it should be longer in your coder `onBTPageOpen` -> `on[AppStr]PageOpen` etc. Examples of `[AppStr]` would be `snakeGame`, `GOL`, `WifiScanner`, `QRCode` or `SerialExample`, depending on the users wish / prompt below the `---`.
+
+Cpp and Header snippets:
+
+```cpp
+#include "btscan.h"
+
+int lastBTScanTime = 0;
+int btScanInterval = 5000; // scan every 5 seconds
+BLEScan* pBLEScan;
+
+void onBTPageOpen() {
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setCursor(0, 0);
+  tft.setTextSize(1);
+  tft.println("Scanning Bluetooth...");
+
+  BLEDevice::init("");
+  pBLEScan = BLEDevice::getScan();
+  pBLEScan->setActiveScan(true); // active scan for more data
+  pBLEScan->setInterval(100);
+  pBLEScan->setWindow(99);
+}
+
+void onBTPageUpdate() {
+  if (millis() - lastBTScanTime > btScanInterval) {
+    BLEScanResults* foundDevices = pBLEScan->start(3, false); // scan for 3 seconds
+    int n = foundDevices->getCount();
+
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 0);
+
+    if (n == 0) {
+      tft.println("No devices found.");
+    } else {
+      for (int i = 0; i < n && i < 10; i++) {
+        BLEAdvertisedDevice device = foundDevices->getDevice(i);
+        tft.printf("%d: %s (%d dBm)\n", i + 1, device.getName().c_str(), device.getRSSI());
+      }
+    }
+
+    pBLEScan->clearResults(); // free memory
+    lastBTScanTime = millis();
+  }
+  closePageIfAnyButtonIsPressed();
+}
+```
+
+```h
+#pragma once
+#include "imports/TFT_eSPI/TFT_eSPI.h"
+#include "library/device/DeviceProps.h"
+#include "library/device/Settings.h"
+#include <BLEDevice.h>
+#include <BLEScan.h>
+
+extern TFT_eSPI tft;
+extern SensorMeasurement sensors;
+extern const DeviceProps* device;
+extern int screenWidth;
+extern int screenHeight;
+extern bool wifiAvailable;
+extern const int VERBOSE;
+extern int LEFT_BUTTON;
+extern int RIGHT_BUTTON;
+
+extern void closePageIfAnyButtonIsPressed();
+
+void onBTPageOpen();
+void onBTPageUpdate();
+```
+
+When building apps for the screen, programmatically and conceptually ensure they work on smaller devices like the ttgo-t1-display and larger ones like the lilygo-s3. You can also hide text based on that or conditionally do stuff smaller / larger with tft espi. Make pretty and clean apple like uis.
+
+The import "library/device/Settings.h" includes a function called `const char* en_de(const char* en, const char* de);` that you should use to do every text in german and english variants. Also ensure, that the translation strings are both roughly the same length while creating them.
+
+---
+
+User Purpose: Build application code, that ...
