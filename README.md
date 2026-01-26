@@ -27,7 +27,7 @@ For more details and examples, refer to our [documentation](https://aicuflow.com
 
 ## Cool demo screenshots
 
-[Cool demo screenshots](https://aicuflow.com/docs/library/arduino/esp32coolscreens.webp)
+![Cool demo screenshots](https://aicuflow.com/docs/library/arduino/esp32coolscreens.webp)
 
 ## Quickstart
 
