@@ -105,7 +105,7 @@ void setupPages() {
   
   pageManager->registerPage("measure", measurementSetup, onMeasurePageUpdate, 0, false); // no delay!
   pageManager->registerPage("about", onAboutPageOpen, closePageIfAnyButtonIsPressed);
-  pageManager->registerPage("tutorial", onAicuflowTutorialPageOpen, onAicuflowTutorialPageUpdate);
+  pageManager->registerPage("tutorial", onAicuflowTutorialPageOpen, onAicuflowTutorialPageUpdate, 20, true, true); // delay, keep screen awake!
   
   pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
   pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);

@@ -33,7 +33,8 @@ public:
     std::function<void()> onOpen,
     std::function<void()> onUpdate,
     uint16_t updateDelayMs = 20,
-    bool blockInputOnOpen = true
+    bool blockInputOnOpen = true,
+    bool keepScreenAwake = false
   );
   
   void begin();
@@ -67,6 +68,7 @@ private:
     std::function<void()> onUpdate;
     uint16_t updateDelayMs;
     bool blockInputOnOpen;
+    bool keepScreenAwake;
   };
   
   TFT_eSPI* tft;

@@ -38,13 +38,15 @@ PageManager& PageManager::registerPage(
   std::function<void()> onOpen,
   std::function<void()> onUpdate,
   uint16_t updateDelayMs,
-  bool blockInputOnOpen
+  bool blockInputOnOpen,
+  bool keepScreenAwake
 ) {
   PageConfig config;
   config.onOpen = onOpen;
   config.onUpdate = onUpdate;
   config.updateDelayMs = updateDelayMs;
   config.blockInputOnOpen = blockInputOnOpen;
+  config.keepScreenAwake = keepScreenAwake;
   pages[String(pageId)] = config;
   return *this;
 }
@@ -111,7 +113,17 @@ void PageManager::returnToDefault() {
 
 void PageManager::updateScreenPower() {
   if (!screenIdleMs) return;
+  if (currentPageId == nullptr) return;
   
+  PageConfig& config = pages[String(currentPageId)];
+    if (config.keepScreenAwake) {
+      lastInputMs = millis();
+    if (!screenAwake) {
+      digitalWrite(TFT_BL, HIGH);
+      screenAwake = true;
+    }
+    return;
+  }
   bool anyInput = (digitalRead(leftButton) == LOW) || (digitalRead(rightButton) == LOW);
   
   if (anyInput) {
