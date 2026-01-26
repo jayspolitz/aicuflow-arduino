@@ -1,0 +1,8 @@
+These are externally imported libraries.
+We link them in the project directly for convenience,
+so users can just clone this sketch and don't have to
+install anything form arduino libraries.
+
+List of libs:
+
+- ArduinoJson v7.4.2 by Benoit (https://arduinojson.org/) `#include <ArduinoJson.h>` -> `#include "imports/ArduinoJson/ArduinoJson.h"`
