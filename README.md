@@ -27,6 +27,9 @@ For more details and examples, refer to our [documentation](https://aicuflow.com
 
 ## Cool demo screenshots
 
+<div align="center"> <img src="https://aicuflow.com/docs/library/arduino/esp32sensors.webp" width="50%" /> </div>
+
+
 ![Cool demo screenshots](https://aicuflow.com/docs/library/arduino/esp32coolscreens.webp)
 
 ## Quickstart
