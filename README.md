@@ -17,13 +17,17 @@ If you just want to get the `AicuClient.cpp` code, it is under `library/aicuflow
 
 ![](https://aicuflow.com/docs/library/arduino/esp32title.png)
 
-(Preferably you would want to use WiFi capable oards similar to the ESP32 for this)
+(Preferably you would want to use WiFi capable boards similar to the ESP32 for this)
 
 Connect to [aicuflow](https://aicuflow.com) using an ESP-32 or similar Microcontroller.
 For more details and examples, refer to our [documentation](https://aicuflow.com/docs/library/arduino).
 
 [![](https://aicuflow.com/api/badge?label=&message=free%20registration&color=036b64)](https://aicuflow.com/signup)
 [![](https://aicuflow.com/api/badge?label=&message=quick%20setup&color=036b64)](https://aicuflow.com/docs/library/arduino)
+
+## Cool demo screenshots
+
+[Cool demo screenshots](https://aicuflow.com/docs/library/arduino/esp32coolscreens.webp)
 
 ## Quickstart
 
