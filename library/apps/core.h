@@ -9,8 +9,6 @@
 #include "library/graphics/TFTKeyboard.h"
 #include "library/graphics/PageManager.h"
 
-// #include "library/apps/all.h"
-
 // use the global ones
 extern TFT_eSPI tft;
 extern SensorMeasurement sensors;

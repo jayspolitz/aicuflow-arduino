@@ -2,7 +2,6 @@
 
 // import all apps / pages here at once
 // outcommented stuff is in main ino file
-// #include "library/apps/all.h"
 // #include "library/apps/core.cpp"           // page: core utils for page / menu setup
 #include "library/apps/boot.cpp"              // page: boot screen & setup
 #include "library/apps/measurement.cpp"       // page: measurement helpers
@@ -17,6 +16,7 @@
 #include "library/apps/mandelbrot.cpp"        // page: mandelbrot set render
 #include "library/apps/wireframe3d.cpp"       // page: 3d rotation renderer
 #include "library/apps/aicuflow_tutorial.cpp" // page: tutorial
+#include "library/apps/architecture.cpp"      // page: hw archi
 // add more pages here
 // #include "library/apps/_expand.cpp"        // page: custom page
 
@@ -34,6 +34,7 @@ void setupMenus() {
   // graphicstest
   graphicsMenu = new TFTMenu(&tft, en_de("Graphics", "Grafik"));
   graphicsMenu->addBackItem(s_back);
+  graphicsMenu->addItem(en_de("HW-Diagram", "HW-Diagramm"), []() { pageManager->openPage("architecture"); });
   graphicsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
   graphicsMenu->addItem(en_de("3D Objects", "3D Objekte"), []() { pageManager->openPage("3d"); });
   graphicsMenu->addItem(en_de("Color Test", "Farbtest"), []() { pageManager->openPage("colors"); });
@@ -108,7 +109,8 @@ void setupPages() {
   
   pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
   pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
-  
+
+  pageManager->registerPage("architecture", onHWDiagPageOpen, onHWDiagPageUpdate);
   pageManager->registerPage("colors", onColorTestPageOpen, onColorTestPageUpdate);
   pageManager->registerPage("colorwheel", onColorWheelTestPageOpen, onColorWheelTestPageUpdate);
   pageManager->registerPage("random", nullptr, []() { onRandomPageUpdate(); closePageIfAnyButtonIsPressed(); });
