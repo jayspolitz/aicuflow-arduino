@@ -31,7 +31,7 @@
 
 // === Imports ===
 #include <WiFiClientSecure.h> // alt (insecure): #include <WiFiClient.h>
-#include "imports/TFT_eSPI/TFT_eSPI.h"      // LIB NEED TO INSTALL 
+#include "imports/TFT_eSPI/TFT_eSPI.cpp"      // LIB NEED TO INSTALL 
 #include "imports/ArduinoJson/ArduinoJson.h"      // LIB NEED TO INSTALL 
 #include "library/device/DeviceProps.cpp"        // device detection
 #include "library/device/Settings.cpp"           // persistent settings

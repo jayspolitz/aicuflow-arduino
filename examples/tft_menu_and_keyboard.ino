@@ -14,7 +14,7 @@
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
-#include "imports/TFT_eSPI/TFT_eSPI.h"
+#include "imports/TFT_eSPI/TFT_eSPI.cpp"
 #include "library/graphics/TFTMenuModern.cpp"
 #include "library/graphics/TFTKeyboard.cpp"
 

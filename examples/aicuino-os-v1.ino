@@ -23,7 +23,7 @@
  */
 
 
-#include "imports/TFT_eSPI/TFT_eSPI.h" // v2.5.43 Bodmer, needs customisation
+#include "imports/TFT_eSPI/TFT_eSPI.cpp" // v2.5.43 Bodmer, needs customisation
 #include <SPI.h>
 
 #include <WiFi.h>

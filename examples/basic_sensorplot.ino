@@ -5,8 +5,7 @@
  *  Uses ESPI v2.5.43 Bodmer, which needs customisation.
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
-
-#include "imports/TFT_eSPI/TFT_eSPI.h"
+#include "imports/TFT_eSPI/TFT_eSPI.cpp"
 #include "sensors/SensorMeasurement.cpp"
 
 bool isTDisplayS3 = true;
