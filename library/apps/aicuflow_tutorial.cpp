@@ -33,7 +33,7 @@ static void aicuflowTutorialDrawHint() {
   tft.setTextDatum(MC_DATUM);
 
   if (aicuflowTutorialPage == 0)
-    tft.drawString(en_de("Press right button", "Drücke rechten Knopf"),
+    tft.drawString(en_de("Press right button", "Druecke rechte Taste"),
                  screenWidth / 2,
                  screenHeight - 26);
   else if (aicuflowTutorialPage == aicuflowTutorialPageCount - 1)
@@ -148,6 +148,8 @@ void onAicuflowTutorialPageUpdate() {
   // RIGHT: immediate exit on last page (on press)
   if (rightDown && !aicuflowTutorialRightWasDown &&
       aicuflowTutorialPage == aicuflowTutorialPageCount - 1) {
+    hasDoneTutorial = true;
+    saveSettings();
     closePageIfAnyButtonIsPressed();
     return;
   }

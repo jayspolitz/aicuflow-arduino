@@ -77,7 +77,7 @@ void setupMenus() {
   settingsMenu->addItem(en_de("Language: EN", "Language: DE"), []() { locale = locale == "en" ? "de" : "en"; saveSettings(); esp_restart(); });
   settingsMenu->addItem(en_de("Factory Reset", "Zurucksetzen"), []() { clearSettings(); esp_restart(); });
   settingsMenu->addItem(en_de("Restart Device", "Neu starten"), []() { esp_restart(); });
-  settingsMenu->addItem(en_de("Tutorial", "Einführung"), []() { pageManager->openPage("tutorial"); });
+  settingsMenu->addItem(en_de("Tutorial", "Einfuehrung"), []() { pageManager->openPage("tutorial"); });
 
   // main
   mainMenu = new TFTMenu(&tft, en_de("Aicuflow IoT+AI", "Aicuflow IoT+KI"));
@@ -121,7 +121,12 @@ void setupPages() {
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
 
-  pageManager->setDefaultPage(device->has_display ? "menu" : "measure");
+  pageManager->setDefaultPage(
+    device->has_display ? "menu" : "measure" // meause auto on no-screen devices
+  );
+  pageManager->begin();
+
+  if (device->has_display && !hasDoneTutorial) pageManager->openPage("tutorial");
 }
 void onMenuPageOpen() {
   tft.fillScreen(TFT_BLACK);

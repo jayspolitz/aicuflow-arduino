@@ -124,10 +124,10 @@ void setup() {
   
   if (!device->has_display) delay(1000);
   if (device->has_display)  initTFTScreen();
-  if (device->has_display)  bootScreen(3000);
+  if (device->has_display)  bootScreen(1000);
   if (device->has_display)  setupMenus();
   
-  setupPages(); pageManager->begin();
+  setupPages();
 }
 void loop() {
   pageManager->update(); // render apps like measurement
