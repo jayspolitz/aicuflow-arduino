@@ -9,7 +9,7 @@
 #define SENSOR_MEASUREMENT_H
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
+#include "imports/ArduinoJson/ArduinoJson.h"
 #include <functional>
 #include <vector>
 

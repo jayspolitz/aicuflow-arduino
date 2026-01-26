@@ -1,0 +1,15 @@
+This is ArduinoJson v7.4.2 by Benoit.
+It is not modified, and we pass all credit to the creator.
+The include statements are changed to fit this file structure.
+
+```cpp
+#include "imports/ArduinoJson/ArduinoJson.h"
+```
+
+instead of
+
+```cpp
+#include <ArduinoJson.h>
+```
+
+It is included here, so users don't have to install it when cloning this repository.

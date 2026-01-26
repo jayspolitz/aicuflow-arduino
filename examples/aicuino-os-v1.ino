@@ -30,7 +30,7 @@
 #include <WiFiClientSecure.h>
 #include <esp_wifi.h>  // esp_wifi_set_max_tx_power(52); // ca 13dBm
 #include <HTTPClient.h>
-#include <ArduinoJson.h> // 7.4.2 by Benoit
+#include "imports/ArduinoJson/ArduinoJson.h" // 7.4.2 by Benoit
 
 #include "device/DeviceProps.cpp"
 #include "aicuflow/AicuClient.cpp"

@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-#include <ArduinoJson.h>
+#include "imports/ArduinoJson/ArduinoJson.h"
 
 class AicuClient {
 public:

@@ -2,7 +2,7 @@
 #include <TFT_eSPI.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <ArduinoJson.h>
+#include "imports/ArduinoJson/ArduinoJson.h"
 #include "library/device/DeviceProps.h"
 #include "library/device/Settings.h"
 #include "library/sensors/SensorMeasurement.h"

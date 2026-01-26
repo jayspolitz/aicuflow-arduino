@@ -32,7 +32,7 @@
 // === Imports ===
 #include <WiFiClientSecure.h> // alt (insecure): #include <WiFiClient.h>
 #include <TFT_eSPI.h>         // LIB NEED TO INSTALL v2.5.43 Bodmer, needs customisation
-#include <ArduinoJson.h>      // LIB NEED TO INSTALL 7.4.2 by Benoit
+#include "imports/ArduinoJson/ArduinoJson.h"      // LIB NEED TO INSTALL 
 #include "library/device/DeviceProps.cpp"        // device detection
 #include "library/device/Settings.cpp"           // persistent settings
 #include "library/aicuflow/AicuClient.cpp"       // --> client library you can use <--
