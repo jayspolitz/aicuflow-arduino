@@ -1,7 +1,7 @@
 #ifndef TFT_MENU_H
 #define TFT_MENU_H
 
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include <functional>
 
 // Menu item types

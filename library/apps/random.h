@@ -1,5 +1,5 @@
 #pragma once
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include "library/device/DeviceProps.h"
 
 // use the global ones

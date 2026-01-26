@@ -6,3 +6,4 @@ install anything form arduino libraries.
 List of libs:
 
 - ArduinoJson v7.4.2 by Benoit (https://arduinojson.org/) `#include <ArduinoJson.h>` -> `#include "imports/ArduinoJson/ArduinoJson.h"`
+- TFT_eSPI v2.5.43 by Bodmer (https://github.com/Bodmer/TFT_eSPI) `#include "imports/TFT_eSPI/TFT_eSPI.h"` -> `#include "imports/TFT_eSPI/TFT_eSPI.h"` usually would need customisation but we want to do this automatically

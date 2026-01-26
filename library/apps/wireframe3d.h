@@ -1,7 +1,7 @@
 #ifndef WIREFRAME3D_H
 #define WIREFRAME3D_H
 
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 
 extern TFT_eSPI tft;
 extern int screenWidth;

@@ -1,7 +1,7 @@
 #ifndef MANDELBROT_H
 #define MANDELBROT_H
 
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 
 extern TFT_eSPI tft;
 extern int screenWidth;

@@ -1,5 +1,5 @@
 #pragma once
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "imports/ArduinoJson/ArduinoJson.h"

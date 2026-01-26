@@ -2,7 +2,7 @@
 #define TFTKEYBOARD_H
 
 #include <Arduino.h>
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include <vector>
 #include <functional>
 

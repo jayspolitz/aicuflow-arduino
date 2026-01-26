@@ -9,7 +9,7 @@
 // or #include "sensors/SensorMeasurement.h"
 #include "../graphics/ScrollingGraph.cpp"
 // or #include "graphics/ScrollingGraph.cpp"
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 
 SensorMeasurement::SensorMeasurement(const char* deviceId) 
     : deviceId(deviceId), timestamp(0) {

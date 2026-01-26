@@ -6,7 +6,7 @@
 
 #include "PageManager.h"
 #include "../graphics/TFTMenuModern.cpp" // TFTMenuModern or TFTMenu
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 
 PageManager::PageManager(TFT_eSPI* tft, int leftBtn, int rightBtn, int screenIdleMs)
   : tft(tft)

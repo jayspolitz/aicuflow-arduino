@@ -6,7 +6,7 @@
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include "sensors/SensorMeasurement.cpp"
 
 bool isTDisplayS3 = true;

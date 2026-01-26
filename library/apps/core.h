@@ -1,5 +1,5 @@
 #pragma once
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include <esp_wifi.h> // some esp32 boards need: esp_wifi_set_max_tx_power(52); // ca 13dBm
 
 #include "library/device/DeviceProps.h"

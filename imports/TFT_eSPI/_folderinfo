@@ -1,0 +1,15 @@
+This is TFT_eSPI v2.5.43 by Bodmer.
+It is not modified, and we pass all credit to the creator.
+
+```cpp
+#include "imports/ArduinoJson/ArduinoJson.h"
+```
+
+instead of
+
+```cpp
+#include <ArduinoJson.h>
+```
+
+It is included here, so users don't have to install it when cloning this repository.
+Also, we try to automatically adjust the clients User_Setup_Select.h based on the active board (currently only for lilygo t-display and ttgo-t1).

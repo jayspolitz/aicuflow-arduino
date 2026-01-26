@@ -14,7 +14,7 @@
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 #include <Preferences.h>  // ESP32 built-in library for persistent storage
 #include "library/graphics/TFTMenuModern.cpp"
 #include "library/graphics/TFTKeyboard.cpp"

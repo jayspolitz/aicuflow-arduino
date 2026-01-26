@@ -31,7 +31,7 @@
 
 // === Imports ===
 #include <WiFiClientSecure.h> // alt (insecure): #include <WiFiClient.h>
-#include <TFT_eSPI.h>         // LIB NEED TO INSTALL v2.5.43 Bodmer, needs customisation
+#include "imports/TFT_eSPI/TFT_eSPI.h"      // LIB NEED TO INSTALL 
 #include "imports/ArduinoJson/ArduinoJson.h"      // LIB NEED TO INSTALL 
 #include "library/device/DeviceProps.cpp"        // device detection
 #include "library/device/Settings.cpp"           // persistent settings

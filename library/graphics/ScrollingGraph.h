@@ -1,5 +1,5 @@
 #pragma once
-#include <TFT_eSPI.h>
+#include "imports/TFT_eSPI/TFT_eSPI.h"
 
 // fallback to have tft backlight pin even if stuff is not defined
 #ifndef TFT_BL
