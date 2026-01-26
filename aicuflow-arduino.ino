@@ -2,6 +2,7 @@
  *  Stream Arduino data to aicuflow AI cloud easily.
  *
  *  Docs:  https://aicuflow.com/docs/library/arduino
+ *  Code:  https://github.com/AICU-HEALTH/aicuflow-arduino
  *  From:  20260121-26, by Finn Glas @ AICU GmbH
  *  Board: ESP32 recommended, others work too
  *  Start:

@@ -9,6 +9,8 @@
 
 Machine learning and Arduino? [Aicuflow](https://aicuflow.com) by AICU GmbH makes it possible! Actually, more than that: pretty menus, inputs, plots and sensor streaming to the cloud - with some free data storage.
 
+**Please star this repo, so more people can see it :)**
+
 This code automatically detects your device properties (wifi, tft display, sensors) and adjusts to it - you don't need to set anything up after loading this repository. No need to install external libraries or dependencies, they are packaged under the `imports` folder.
 
 If you just want to get the `AicuClient.cpp` code, it is under `library/aicuflow`. But there is more cool features worthwile exploring in this codebase (check images below)!
@@ -69,7 +71,7 @@ const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
 
 ## Supported Boards and Fixes
 
-We tested this on a hand full of arduino-compatible devices. To be on the safe side, we recommend you use one of these boards. Others may still work, but are not present in our [hardware lab](https://aicuflow.com/docs/library/arduino).
+We tested this on a hand full of arduino-compatible devices. To be on the safe side, we recommend you use one of these boards. Others may still work, but are not present in our [hardware lab](https://aicuflow.com/docs/library/arduino#the-aicuflow-lab).
 
 - ESP32 Wroom
 - ESP32 Devkit
@@ -86,11 +88,21 @@ Known issues and Fixes:
 
 - **Sketch too large** - this can happen if your boards partition scheme (in menu `Tool>Partition Scheme`) is defined wrongly (for example on the ttgo-t1). You can resolve it easily by switching to `Huge App` or another larger scheme that has less file system reservations.
 
-## Roadmap
+## Features and Roadmap
 
 This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) works out of the box or can be included as a library in custom projects. We're expanding support for more devices and use-cases.
 
 ### Already working features
+
+Aicuflow-Arduino Sketch (`aicuflow-arduino.ino`)
+
+- automatic measurement of all on-chip sensors
+- wifi connection with timeout
+- aicuflow logo tft boot animation and screen timeout
+- settings configuration using device buttons
+- apps: scan wifi & bt
+- games: snake, game of life, mandelbrot
+- multilingual mode (EN, DE)
 
 Library (folder `library/*`, see `examples/*`)
 
@@ -101,23 +113,16 @@ Library (folder `library/*`, see `examples/*`)
 - auto tft_espi screen selection (needs more boards)
 - freezed libraries ArduinoJson and TFT_eSPI
 
-Aicu Embedded OS (`aicuflow-arduino.ino`)
-
-- wifi connection with timeout
-- aicuflow logo tft boot animation and screen timeout
-- multilingual mode (EN, DE)
-- settings configuration using device buttons
-
 ### Planned features
 
-needed
+Useful Feats:
 
 - more boards (see [list of almost all microcontrollers](https://github.com/AICU-HEALTH/aicuflow-arduino/blob/main/docs/Microcontrollers.md))
 - automatic aicu session refreshing
 - status indicators (wifi, power, ...)
 - publish library to arduino list
 
-cool
+Cool Stuff:
 
 - multi-wifi setup
 - automatic sensor plug and play (would be cool)
@@ -126,13 +131,19 @@ cool
 - bluetooth phone integration
 - qr code render on tft?
 
-optional
+Optional Future:
 
 - configuration from [aicuflow platform](https://aicuflow.com/flows)
 
-## Contributing
+## Contribution Guide
 
-Check [documentation](https://aicuflow.com/docs/library/arduino) and talk to [Finn](https://github.com/finnmglas) about this
+**Please star this repo, so more people can see it :)**
+
+Check [documentation](https://aicuflow.com/docs/library/arduino) and talk to [Finn](https://github.com/finnmglas) about this.
+
+### The team
+
+Our team at AICU comes together every few months for a team retreat. During the last one we all worked together on making all parts of the aicuflow-arduino connection work nicely. This could become a tradition.
 
 ### Simple process for clean code
 
