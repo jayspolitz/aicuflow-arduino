@@ -77,10 +77,10 @@ void setupMenus() {
   settingsMenu->addItem(en_de("Language: EN", "Language: DE"), []() { locale = locale == "en" ? "de" : "en"; saveSettings(); esp_restart(); });
   settingsMenu->addItem(en_de("Factory Reset", "Zurucksetzen"), []() { clearSettings(); esp_restart(); });
   settingsMenu->addItem(en_de("Restart Device", "Neu starten"), []() { esp_restart(); });
-  
+  settingsMenu->addItem(en_de("Tutorial", "Einführung"), []() { pageManager->openPage("tutorial"); });
+
   // main
   mainMenu = new TFTMenu(&tft, en_de("Aicuflow IoT+AI", "Aicuflow IoT+KI"));
-  mainMenu->addItem(en_de("Tutorial", "Einführung"), []() { pageManager->openPage("tutorial"); });
   mainMenu->addItem(en_de("Start", "Start"), []() { pageManager->openPage("measure"); });
   mainMenu->addSubmenu(en_de("Tools", "Tools"), toolsMenu);
   mainMenu->addSubmenu(en_de("Setup", "Setup"), settingsMenu);

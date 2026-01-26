@@ -1,8 +1,10 @@
 #include "aicuflow_tutorial.h"
 
 static int aicuflowTutorialPage = 0;
-static const int aicuflowTutorialPageCount = 7;
+static const int aicuflowTutorialPageCount = 4;
 static unsigned long aicuflowTutorialLastInput = 0;
+static bool aicuflowTutorialLeftWasDown = false;
+static bool aicuflowTutorialRightWasDown = false;
 
 static int aicuflowTutorialSidePadding() {
   return screenWidth < 200 ? 12 : 20;
@@ -10,7 +12,7 @@ static int aicuflowTutorialSidePadding() {
 
 static void aicuflowTutorialDrawDots() {
   int dotCount = aicuflowTutorialPageCount;
-  int r = 3;
+  int r = 5;
   int spacing = 12;
   int totalW = dotCount * (2 * r) + (dotCount - 1) * spacing;
   int x0 = (screenWidth - totalW) / 2;
@@ -27,9 +29,18 @@ static void aicuflowTutorialDrawDots() {
 
 static void aicuflowTutorialDrawHint() {
   tft.setTextSize(1);
-  tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
   tft.setTextDatum(MC_DATUM);
-  tft.drawString(en_de("Links / Rechts", "Links / Rechts"),
+
+  if (aicuflowTutorialPage == 0)
+    tft.drawString(en_de("Press right button", "Drücke rechten Knopf"),
+                 screenWidth / 2,
+                 screenHeight - 26);
+  else if (aicuflowTutorialPage == aicuflowTutorialPageCount - 1)
+    tft.drawString(en_de("Finish tutorial", "Tutorial beenden"),
+                 screenWidth / 2,
+                 screenHeight - 26);
+  else tft.drawString(en_de("< Left | Right >", "< Links | Rechts >"),
                  screenWidth / 2,
                  screenHeight - 26);
   tft.setTextDatum(TL_DATUM);
@@ -37,7 +48,7 @@ static void aicuflowTutorialDrawHint() {
 
 static void aicuflowTutorialTitle(const char* txt) {
   tft.setTextSize(2);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
   tft.setTextDatum(MC_DATUM);
   tft.drawString(txt, screenWidth / 2, 22);
   tft.setTextDatum(TL_DATUM);
@@ -57,121 +68,51 @@ static void aicuflowTutorialBodyLine(const char* txt, int y) {
 }
 
 static void aicuflowTutorialPage0() {
-  aicuflowTutorialTitle("Aicuflow IoT");
-
+  aicuflowTutorialTitle(en_de("Welcome!", "Willkommen"));
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  int y = aicuflowTutorialBodyStartY(3);
-
-  aicuflowTutorialBodyLine(
-    en_de("Open-source data pipelines",
-          "Open-Source Datenpipelines"), y);
-  y += 16;
-
-  aicuflowTutorialBodyLine(
-    en_de("From devices to insight",
-          "Von Geraeten zu Erkenntnis"), y);
+  int y = aicuflowTutorialBodyStartY(7);
+  aicuflowTutorialBodyLine(en_de("Welcome to Aicuflow!", "Willkommen bei AICU!"), y); y += 16;
+  aicuflowTutorialBodyLine("", y); y += 16;
+  aicuflowTutorialBodyLine(en_de("This is your IoT+AI PoC!", "Hier ist dein IoT+KI PoC!"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("Measure sensor data,", "Sensordaten messen,"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("Stream to the cloud,", "In der Cloud sammeln,"), y);y += 16;
+  aicuflowTutorialBodyLine(en_de("Plot and analyze it,", "Plotten, analysieren,"), y);y += 16;
+  aicuflowTutorialBodyLine(en_de("or train your AI!", "oder KI trainieren!"), y);y += 16;
 }
 
 static void aicuflowTutorialPage1() {
-  aicuflowTutorialTitle(en_de("Use-Cases", "Anwendungsfaelle"));
-
-  tft.setTextSize(1);
-  int y = aicuflowTutorialBodyStartY(5);
-
-  aicuflowTutorialBodyLine("- Sensor Streaming", y); y += 14;
-  aicuflowTutorialBodyLine("- Proof of Concepts", y); y += 14;
-  aicuflowTutorialBodyLine("- IoT Mess-Tools", y);
+  aicuflowTutorialTitle(en_de("Controls", "Steuerung"));
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  int y = aicuflowTutorialBodyStartY(3);
+  aicuflowTutorialBodyLine(en_de("Left = Up", "L. = Hoch"), y); y += 24;
+  aicuflowTutorialBodyLine(en_de("Right = Down", "R. = Runter"), y); y += 24;
+  aicuflowTutorialBodyLine(en_de("Both = Ok", "Beide = Ok"), y); y += 24;
 }
 
 static void aicuflowTutorialPage2() {
-  aicuflowTutorialTitle(en_de("Data Flow", "Datenfluss"));
-
+  aicuflowTutorialTitle(en_de("Setup", "Setup"));
   tft.setTextSize(1);
-  int y = aicuflowTutorialBodyStartY(4);
-
-  aicuflowTutorialBodyLine(
-    en_de("Device sends live data",
-          "Geraet sendet Live-Daten"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("Aicuflow stores streams",
-          "Aicuflow speichert Streams"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("AI can be trained",
-          "KI kann trainiert werden"), y);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  int y = aicuflowTutorialBodyStartY(8);
+  aicuflowTutorialBodyLine(en_de("How to start:", "So startest du:"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("1. Setup > Wifi", "1. Setup > Wlan"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("2. Setup > API", "2. Setup > API"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("3. Start", "3. Start"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("4. Data is sent", "4. Es sendet Daten"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("5. Check your flow", "5. Flow ansehen"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("6. Analyze data", "6. Daten analysieren"), y); y += 16;
 }
 
 static void aicuflowTutorialPage3() {
-  aicuflowTutorialTitle(en_de("Measurement", "Messung"));
-
+  aicuflowTutorialTitle(en_de("Let's go", "Los gehts"));
   tft.setTextSize(1);
-  int y = aicuflowTutorialBodyStartY(4);
-
-  aicuflowTutorialBodyLine(
-    en_de("Main application",
-          "Hauptanwendung"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("All sensors & WiFi stats",
-          "Alle Sensor- & WLAN-Daten"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("Sent in batches",
-          "Gebuendelt gesendet"), y);
-}
-
-static void aicuflowTutorialPage4() {
-  aicuflowTutorialTitle(en_de("Setup", "Einrichtung"));
-
-  tft.setTextSize(1);
-  int y = aicuflowTutorialBodyStartY(5);
-
-  aicuflowTutorialBodyLine("Settings > WiFi", y); y += 14;
-  aicuflowTutorialBodyLine("Settings > API", y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("User, password, flow id",
-          "Benutzer, Passwort, Flow-ID"), y);
-}
-
-static void aicuflowTutorialPage5() {
-  aicuflowTutorialTitle(en_de("Controls", "Bedienung"));
-
-  tft.setTextSize(1);
-  int y = aicuflowTutorialBodyStartY(6);
-
-  aicuflowTutorialBodyLine(
-    en_de("Left: up / previous",
-          "Links: hoch / zurueck"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("Right: down / next",
-          "Rechts: runter / weiter"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("Press both to confirm",
-          "Beide druecken = bestaetigen"), y);
-}
-
-static void aicuflowTutorialPage6() {
-  aicuflowTutorialTitle(en_de("More", "Mehr"));
-
-  tft.setTextSize(1);
-  int y = aicuflowTutorialBodyStartY(5);
-
-  aicuflowTutorialBodyLine(
-    en_de("WiFi & Bluetooth tools",
-          "WLAN- & Bluetooth-Tools"), y); y += 14;
-
-  aicuflowTutorialBodyLine(
-    en_de("Games and test screens",
-          "Spiele und Testanzeigen"), y); y += 18;
-
-  tft.setTextColor(TFT_CYAN, TFT_BLACK);
-  aicuflowTutorialBodyLine("Finn Glas @AICU GmbH", y);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  int y = aicuflowTutorialBodyStartY(4);
+  aicuflowTutorialBodyLine(en_de("You are ready!", "Du bist ready!"), y); y += 16;
+  aicuflowTutorialBodyLine(en_de("Check out tools!", "Teste die Tools!"), y); y += 16;
+  aicuflowTutorialBodyLine("-Finn @AICU GmbH", y); y += 16;
 }
 
 static void aicuflowTutorialRender() {
@@ -182,9 +123,6 @@ static void aicuflowTutorialRender() {
     case 1: aicuflowTutorialPage1(); break;
     case 2: aicuflowTutorialPage2(); break;
     case 3: aicuflowTutorialPage3(); break;
-    case 4: aicuflowTutorialPage4(); break;
-    case 5: aicuflowTutorialPage5(); break;
-    case 6: aicuflowTutorialPage6(); break;
   }
 
   aicuflowTutorialDrawHint();
@@ -195,25 +133,33 @@ void onAicuflowTutorialPageOpen() {
   aicuflowTutorialPage = 0;
   aicuflowTutorialRender();
 }
-
 void onAicuflowTutorialPageUpdate() {
-  if (millis() - aicuflowTutorialLastInput < 180) return;
+  bool leftDown  = (digitalRead(LEFT_BUTTON)  == LOW);
+  bool rightDown = (digitalRead(RIGHT_BUTTON) == LOW);
 
-  if (digitalRead(LEFT_BUTTON) == LOW) {
+  // LEFT: previous page (on release)
+  if (!leftDown && aicuflowTutorialLeftWasDown) {
     if (aicuflowTutorialPage > 0) {
       aicuflowTutorialPage--;
       aicuflowTutorialRender();
     }
-    aicuflowTutorialLastInput = millis();
   }
 
-  if (digitalRead(RIGHT_BUTTON) == LOW) {
+  // RIGHT: immediate exit on last page (on press)
+  if (rightDown && !aicuflowTutorialRightWasDown &&
+      aicuflowTutorialPage == aicuflowTutorialPageCount - 1) {
+    closePageIfAnyButtonIsPressed();
+    return;
+  }
+
+  // RIGHT: next page (on release)
+  if (!rightDown && aicuflowTutorialRightWasDown) {
     if (aicuflowTutorialPage < aicuflowTutorialPageCount - 1) {
       aicuflowTutorialPage++;
       aicuflowTutorialRender();
-    } else {
-      closePageIfAnyButtonIsPressed();
     }
-    aicuflowTutorialLastInput = millis();
   }
+
+  aicuflowTutorialLeftWasDown  = leftDown;
+  aicuflowTutorialRightWasDown = rightDown;
 }
