@@ -94,43 +94,69 @@ void applySettings() {
 }
 
 // Menu & UI
-TFTMenu *mainMenu, *actionsMenu, *settingsMenu;
+TFTMenu *mainMenu, *toolsMenu, *gamesMenu, *graphicsMenu, *connectToolsMenu;
+TFTMenu *settingsMenu, *wifiMenu, *aicuAPIMenu;
 TFTKeyboard* keyboard;
 PageManager* pageManager;
 void setupMenus() {
-  // actions
-  actionsMenu = new TFTMenu(&tft, "Actions");
-  actionsMenu->addBackItem();
-  actionsMenu->addItem("3D Objects", []() { pageManager->openPage("3d"); });
-  actionsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
-  actionsMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
-  actionsMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
-  actionsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
-  actionsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
-  actionsMenu->addItem("Colortest", []() { pageManager->openPage("colors"); });
-  actionsMenu->addItem("Colorwheel", []() { pageManager->openPage("colorwheel"); });
-  actionsMenu->addItem("Random Color", []() { pageManager->openPage("random"); });
+  // connection tools
+  connectToolsMenu = new TFTMenu(&tft, "Wireless");
+  connectToolsMenu->addBackItem();
+  connectToolsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
+  connectToolsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
+
+  // graphicstest
+  graphicsMenu = new TFTMenu(&tft, "Graphics");
+  graphicsMenu->addBackItem();
+  graphicsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
+  graphicsMenu->addItem("3D Objects", []() { pageManager->openPage("3d"); });
+  graphicsMenu->addItem("Colortest", []() { pageManager->openPage("colors"); });
+  graphicsMenu->addItem("Colorwheel", []() { pageManager->openPage("colorwheel"); });
+  graphicsMenu->addItem("Random Color", []() { pageManager->openPage("random"); });
+
+  // games
+  gamesMenu = new TFTMenu(&tft, "Games");
+  gamesMenu->addBackItem();
+  gamesMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
+  gamesMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
+
+  // tools
+  toolsMenu = new TFTMenu(&tft, "Tools");
+  toolsMenu->addBackItem();
+  toolsMenu->addSubmenu("Wireless", connectToolsMenu);
+  toolsMenu->addSubmenu("Graphics", graphicsMenu);
+  toolsMenu->addSubmenu("Games", gamesMenu);
+  
+  // wifi settings
+  wifiMenu = new TFTMenu(&tft, "WiFi Settings");
+  wifiMenu->addBackItem();
+  wifiMenu->addItem("WiFi SSID", []() { pageManager->openPage("keyboard", (void*)3); });
+  wifiMenu->addItem("WiFi Pass", []() { pageManager->openPage("keyboard", (void*)4); });
+  
+  // aicuflow settings
+  aicuAPIMenu = new TFTMenu(&tft, "Aicuflow API");
+  aicuAPIMenu->addBackItem();
+  aicuAPIMenu->addItem("User Mail", []() { pageManager->openPage("keyboard", (void*)5); });
+  aicuAPIMenu->addItem("User Pass", []() { pageManager->openPage("keyboard", (void*)6); });
+  aicuAPIMenu->addItem("Flow ID", []() { pageManager->openPage("keyboard", (void*)7); });
+  aicuAPIMenu->addItem("Device Name", []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
+  aicuAPIMenu->addItem("File Name", []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
   
   // settings
   settingsMenu = new TFTMenu(&tft, "Settings");
   settingsMenu->addBackItem();
-  settingsMenu->addItem("WiFi SSID", []() { pageManager->openPage("keyboard", (void*)3); });
-  settingsMenu->addItem("WiFi Pass", []() { pageManager->openPage("keyboard", (void*)4); });
-  settingsMenu->addItem("User Mail", []() { pageManager->openPage("keyboard", (void*)5); });
-  settingsMenu->addItem("User Pass", []() { pageManager->openPage("keyboard", (void*)6); });
-  settingsMenu->addItem("Flow ID", []() { pageManager->openPage("keyboard", (void*)7); });
-
-  settingsMenu->addItem("Device Name", []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
-  settingsMenu->addItem("File Name", []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
-  settingsMenu->addItem("About AICU", []() { pageManager->openPage("about"); });
+  settingsMenu->addSubmenu("WiFi Settings", wifiMenu);
+  settingsMenu->addSubmenu("API Settings", aicuAPIMenu);
   settingsMenu->addItem("Factory Reset", []() { clearSettings(); esp_restart(); });
   settingsMenu->addItem("Restart Device", []() { esp_restart(); });
   
   // main
-  mainMenu = new TFTMenu(&tft, "Aicuflow IoT");
+  mainMenu = new TFTMenu(&tft, "Aicuflow IoT+AI");
   mainMenu->addItem("Start", []() { pageManager->openPage("measure"); });
-  mainMenu->addSubmenu("Actions", actionsMenu);
-  mainMenu->addSubmenu("Settings", settingsMenu);
+  mainMenu->addSubmenu("IoT Tools", toolsMenu);
+  mainMenu->addSubmenu("Preferences", settingsMenu);
+  mainMenu->addItem("About Aicuflow", []() { pageManager->openPage("about"); });
+
   // add more menus here
   // mainMenu->addItem("Custom Page", []() { pageManager->openPage("[appname]"); });
   
