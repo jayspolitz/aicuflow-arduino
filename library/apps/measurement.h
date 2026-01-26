@@ -28,3 +28,5 @@ extern int RIGHT_BUTTON;
 // declare functions importable
 void connectWifiOrTimeout();
 void connectAPI();
+void initPoints();
+void onMeasurePageUpdate();
