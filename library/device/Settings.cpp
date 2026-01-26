@@ -11,6 +11,8 @@ String aicuMail = AICU_USER;
 String aicuPass = AICU_PASS;
 String aicuFlow = PROJ_FLOW;
 
+String locale = "de"; // en
+
 String streamFileName = PROJ_FILE;
 String deviceName = "device"; // auto-replaced by device id first time
 
@@ -23,6 +25,8 @@ void loadSettings() {
   aicuMail = preferences.getString("aicuMail", aicuMail);
   aicuPass = preferences.getString("aicuPass", aicuPass);
   aicuFlow = preferences.getString("aicuFlow", aicuFlow);
+
+  locale = preferences.getString("locale", locale);
 
   streamFileName = preferences.getString("streamFileName", streamFileName);
   deviceName = preferences.getString("deviceName", String(device->kind_short) + DEVICE_ID_SUFFIX);
@@ -44,6 +48,8 @@ void saveSettings() {
   preferences.putString("aicuPass", aicuPass);
   preferences.putString("aicuFlow", aicuFlow);
 
+  preferences.putString("locale", locale);
+
   preferences.putString("streamFileName", streamFileName);
   preferences.putString("deviceName", deviceName);
 
@@ -56,4 +62,8 @@ void clearSettings() {
   preferences.clear();
   preferences.end();
   if (VERBOSE) Serial.println("Prefs cleared!");
+}
+
+const char* en_de(const char* en, const char* de) {
+    return (locale == "de") ? de : en;
 }

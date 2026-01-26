@@ -81,7 +81,7 @@ bool AicuClient::_postJson(const String& path, JsonDocument& payload, JsonDocume
 
     if (_verbose) {
         Serial.print("POST "); Serial.println(_baseUrl + path);
-        Serial.print("Payload: "); Serial.println(payloadStr);
+        Serial.print("Payload: "); Serial.print(payloadStr.length()); Serial.println("B");
     }
 
     int code = http.POST(payloadStr);

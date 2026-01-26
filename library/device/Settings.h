@@ -1,4 +1,5 @@
 #pragma once
+#ifndef SETTINGS_H
 #include <Preferences.h>  // ESP32 built-in lib
 #include "library/device/DeviceProps.h"
 
@@ -15,3 +16,7 @@ extern const char* PROJ_FLOW;
 
 extern const char* PROJ_FILE;
 extern const char* DEVICE_ID_SUFFIX;
+
+const char* en_de(const char* en, const char* de);
+
+#endif //SETTINGS_H

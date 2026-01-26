@@ -89,7 +89,7 @@ public:
   // Menu building
   void addItem(String label, std::function<void()> action);
   void addSubmenu(String label, TFTMenu* submenu);
-  void addBackItem(String label = "← Back");
+  void addBackItem(String label = "Back");
   
   // Display
   void begin();

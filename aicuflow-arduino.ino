@@ -99,69 +99,71 @@ TFTMenu *settingsMenu, *wifiMenu, *aicuAPIMenu;
 TFTKeyboard* keyboard;
 PageManager* pageManager;
 void setupMenus() {
+  const char* s_back = en_de("Back", "Hoch");
   // connection tools
-  connectToolsMenu = new TFTMenu(&tft, "Wireless");
-  connectToolsMenu->addBackItem();
-  connectToolsMenu->addItem("Wifi Scan", []() { pageManager->openPage("wifiscan"); });
-  connectToolsMenu->addItem("BT Scan", []() { pageManager->openPage("btscan"); });
+  connectToolsMenu = new TFTMenu(&tft, en_de("Wireless", "Funk"));
+  connectToolsMenu->addBackItem(s_back);
+  connectToolsMenu->addItem(en_de("Wifi Scan", "Wlan Suche"), []() { pageManager->openPage("wifiscan"); });
+  connectToolsMenu->addItem(en_de("BT Scan", "BT Suche"), []() { pageManager->openPage("btscan"); });
 
   // graphicstest
-  graphicsMenu = new TFTMenu(&tft, "Graphics");
-  graphicsMenu->addBackItem();
+  graphicsMenu = new TFTMenu(&tft, en_de("Graphics", "Grafik"));
+  graphicsMenu->addBackItem(s_back);
   graphicsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
-  graphicsMenu->addItem("3D Objects", []() { pageManager->openPage("3d"); });
-  graphicsMenu->addItem("Colortest", []() { pageManager->openPage("colors"); });
-  graphicsMenu->addItem("Colorwheel", []() { pageManager->openPage("colorwheel"); });
-  graphicsMenu->addItem("Random Color", []() { pageManager->openPage("random"); });
+  graphicsMenu->addItem(en_de("3D Objects", "3D Objekte"), []() { pageManager->openPage("3d"); });
+  graphicsMenu->addItem(en_de("Color Test", "Farbtest"), []() { pageManager->openPage("colors"); });
+  graphicsMenu->addItem(en_de("Color Wheel", "Farbrad"), []() { pageManager->openPage("colorwheel"); });
+  graphicsMenu->addItem(en_de("Random Color", "Farbrauschen"), []() { pageManager->openPage("random"); });
 
   // games
-  gamesMenu = new TFTMenu(&tft, "Games");
-  gamesMenu->addBackItem();
-  gamesMenu->addItem("Snake Game", []() { pageManager->openPage("snake"); });
+  gamesMenu = new TFTMenu(&tft, en_de("Games","Spiele"));
+  gamesMenu->addBackItem(s_back);
+  gamesMenu->addItem(en_de("Snake Game", "Snake Spiel"), []() { pageManager->openPage("snake"); });
   gamesMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
 
   // tools
   toolsMenu = new TFTMenu(&tft, "Tools");
-  toolsMenu->addBackItem();
-  toolsMenu->addSubmenu("Wireless", connectToolsMenu);
-  toolsMenu->addSubmenu("Graphics", graphicsMenu);
-  toolsMenu->addSubmenu("Games", gamesMenu);
+  toolsMenu->addBackItem(s_back);
+  toolsMenu->addSubmenu(en_de("Wireless", "Funk"), connectToolsMenu);
+  toolsMenu->addSubmenu(en_de("Graphics", "Grafik"), graphicsMenu);
+  toolsMenu->addSubmenu(en_de("Games","Spiele"), gamesMenu);
   
   // wifi settings
-  wifiMenu = new TFTMenu(&tft, "WiFi Settings");
-  wifiMenu->addBackItem();
-  wifiMenu->addItem("WiFi SSID", []() { pageManager->openPage("keyboard", (void*)3); });
-  wifiMenu->addItem("WiFi Pass", []() { pageManager->openPage("keyboard", (void*)4); });
+  wifiMenu = new TFTMenu(&tft, en_de("WiFi Settings", "Wlan Zugang"));
+  wifiMenu->addBackItem(s_back);
+  wifiMenu->addItem(en_de("WiFi SSID", "Wlan Name"), []() { pageManager->openPage("keyboard", (void*)3); });
+  wifiMenu->addItem(en_de("WiFi Passwd", "Wlan Passwd"), []() { pageManager->openPage("keyboard", (void*)4); });
   
   // aicuflow settings
   aicuAPIMenu = new TFTMenu(&tft, "Aicuflow API");
-  aicuAPIMenu->addBackItem();
-  aicuAPIMenu->addItem("User Mail", []() { pageManager->openPage("keyboard", (void*)5); });
-  aicuAPIMenu->addItem("User Pass", []() { pageManager->openPage("keyboard", (void*)6); });
-  aicuAPIMenu->addItem("Flow ID", []() { pageManager->openPage("keyboard", (void*)7); });
-  aicuAPIMenu->addItem("Device Name", []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
-  aicuAPIMenu->addItem("File Name", []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
+  aicuAPIMenu->addBackItem(s_back);
+  aicuAPIMenu->addItem(en_de("User Mail", "Login Mail"), []() { pageManager->openPage("keyboard", (void*)5); });
+  aicuAPIMenu->addItem(en_de("User Passwd.", "Login Passwd."), []() { pageManager->openPage("keyboard", (void*)6); });
+  aicuAPIMenu->addItem(en_de("Flow ID", "Flow Id"), []() { pageManager->openPage("keyboard", (void*)7); });
+  aicuAPIMenu->addItem(en_de("Device Name", "Geraetename"), []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
+  aicuAPIMenu->addItem(en_de("File Name", "Dateiname"), []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
   
   // settings
-  settingsMenu = new TFTMenu(&tft, "Settings");
-  settingsMenu->addBackItem();
-  settingsMenu->addSubmenu("WiFi Settings", wifiMenu);
-  settingsMenu->addSubmenu("API Settings", aicuAPIMenu);
-  settingsMenu->addItem("Factory Reset", []() { clearSettings(); esp_restart(); });
-  settingsMenu->addItem("Restart Device", []() { esp_restart(); });
+  settingsMenu = new TFTMenu(&tft, en_de("Settings", "Einstellungen"));
+  settingsMenu->addBackItem(s_back);
+  settingsMenu->addSubmenu(en_de("WiFi Settings", "Wlan Zugang"), wifiMenu);
+  settingsMenu->addSubmenu("Aicuflow API", aicuAPIMenu);
+  settingsMenu->addItem(en_de("Language: EN", "Language: DE"), []() { locale = locale == "en" ? "de" : "en"; saveSettings(); esp_restart(); });
+  settingsMenu->addItem(en_de("Factory Reset", "Zurucksetzen"), []() { clearSettings(); esp_restart(); });
+  settingsMenu->addItem(en_de("Restart Device", "Neu starten"), []() { esp_restart(); });
   
   // main
-  mainMenu = new TFTMenu(&tft, "Aicuflow IoT+AI");
-  mainMenu->addItem("Start", []() { pageManager->openPage("measure"); });
-  mainMenu->addSubmenu("IoT Tools", toolsMenu);
-  mainMenu->addSubmenu("Preferences", settingsMenu);
-  mainMenu->addItem("About Aicuflow", []() { pageManager->openPage("about"); });
+  mainMenu = new TFTMenu(&tft, en_de("Aicuflow IoT+AI", "Aicuflow IoT+KI"));
+  mainMenu->addItem(en_de("Start", "Start"), []() { pageManager->openPage("measure"); });
+  mainMenu->addSubmenu(en_de("Tools", "Tools"), toolsMenu);
+  mainMenu->addSubmenu(en_de("Setup", "Setup"), settingsMenu);
+  mainMenu->addItem(en_de("About", "Infos"), []() { pageManager->openPage("about"); });
 
   // add more menus here
   // mainMenu->addItem("Custom Page", []() { pageManager->openPage("[appname]"); });
   
   // keyboard
-  keyboard = new TFTKeyboard(&tft, "Enter Text");
+  keyboard = new TFTKeyboard(&tft, en_de("Enter Text", "Text eingeben"));
   keyboard->setButtonPins(LEFT_BUTTON, RIGHT_BUTTON);
   keyboard->setOnConfirm(onTextConfirmed);
   
@@ -251,7 +253,7 @@ void sendTask(void* parameter) {
 
 // connecting
 void connectWifiOrTimeout() {
-  if (device->has_display) tft.print("Connecting...");
+  if (device->has_display) tft.print(en_de("Connecting...", "Verbinden..."));
   WiFi.mode(WIFI_STA);
   WiFi.begin(wlanSSID, wlanPass);
 
@@ -272,7 +274,7 @@ void connectWifiOrTimeout() {
     wifiAvailable = false;
     tft.print("\n");
     tft.setTextColor(TFT_RED);
-    tft.println("WiFi failed :/");
+    tft.println(en_de("WiFi failed :/", "Wlan fehlgeschlagen"));
     tft.setTextColor(TFT_WHITE);
     return;
   } else { // connected = on
@@ -287,7 +289,7 @@ void connectWifiOrTimeout() {
   if (wifiAvailable && device->has_display) {
     tft.print("\n");
     tft.setTextColor(TFT_GREEN);
-    tft.print("WiFi: "); 
+    tft.print(en_de("WiFi: ", "Wlan:")); 
     tft.println(WiFi.localIP());
     tft.setTextColor(TFT_WHITE);
   } else if (device->has_display) tft.print("\n");
@@ -298,7 +300,7 @@ void connectAPI() {
   if (!aicu.login(aicuMail, aicuPass)) {
     if (device->has_display){
       tft.setTextColor(TFT_RED);
-      tft.println("API connection failed! :/");
+      tft.println(en_de("Login failed! :/", "Anmeldefehler! :/"));
       tft.setTextColor(TFT_WHITE);
     }
     Serial.println("Login failed!");
@@ -306,7 +308,7 @@ void connectAPI() {
   } else {
     if (device->has_display){
       tft.setTextColor(TFT_GREEN);
-      tft.println("API connected!");
+      tft.println(en_de("Aicuflow connected!", "Aicuflow verbunden!"));
       tft.setTextColor(TFT_WHITE);
     }
     Serial.println("Login success!");
@@ -355,12 +357,12 @@ void initSensorGraphs() {
   else sensors.setGraphSpacing(14, 3);
   if (device->has_wifi && wifiAvailable){
     tft.setTextColor(TFT_CYAN);
-    tft.print("Sending to "); tft.print(streamFileName); tft.println(".arrow");
+    tft.print(en_de("Sending to ", "Sende an ")); tft.print(streamFileName); tft.println(".arrow");
     tft.setTextColor(TFT_WHITE);
   }
   else {
     tft.setTextColor(TFT_YELLOW);
-    tft.println("Measuring Locally...");
+    tft.println(en_de("Measuring without sending...", "Messung ohne zu senden..."));
     tft.setTextColor(TFT_WHITE);
   }
   sensors.initGraphs(&tft, screenWidth, screenHeight);
@@ -401,49 +403,6 @@ void onMeasurePageUpdate() {
   if (wifiAvailable && device->has_wifi)  addSampleAndAutoSend();
 
   closePageIfBothLongPressed();
-}
-
-// initing
-void initDeviceGPIOPins() {
-  // specifics
-  if (device->kind_slug == "esp32-ttgo-t1") {
-    // voltage divider something
-    pinMode(14, OUTPUT);
-    digitalWrite(14, HIGH);
-
-    // buttons
-    LEFT_BUTTON = 0;
-    RIGHT_BUTTON = 35;
-    pinMode(LEFT_BUTTON, INPUT_PULLUP);
-    pinMode(RIGHT_BUTTON, INPUT);
-  } else if (device->kind_slug == "lilygo-t-display-s3") {
-    // buttons
-    LEFT_BUTTON = 0;
-    RIGHT_BUTTON = 14;
-    pinMode(LEFT_BUTTON, INPUT_PULLUP);
-    pinMode(RIGHT_BUTTON, INPUT);
-
-    // power up
-    esp_wifi_set_max_tx_power(52); // ca 13dBm
-  }
-}
-void initSerial() {
-  Serial.begin(115200); // Serial.begin(0); would try to detect
-  // if (Serial.baudRate() == 0) // no rate detected
-  while (!Serial && millis() < 2000) delay(10);
-  if (VERBOSE) Serial.println("Hello World!");
-  delay(500);
-  Serial.print("Aicuflow booted on "); Serial.print(device->kind_slug); Serial.println("!");
-}
-void initTFTScreen() {
-  screenWidth  = tft.width();
-  screenHeight = tft.height();
-  if (VERBOSE) Serial.print("Width: "); Serial.println(screenWidth);   // ttgo-t1: 135 
-  if (VERBOSE) Serial.print("Height: "); Serial.println(screenHeight); // ttgo-t1: 240
-  tft.init();
-  
-  pinMode(TFT_BL, OUTPUT);
-  digitalWrite(TFT_BL, HIGH); // screen on
 }
 
 /* Aicuflow x Arduino Setup & Loop */
