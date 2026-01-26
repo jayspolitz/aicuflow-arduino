@@ -9,6 +9,10 @@
 
 Machine learning and Arduino? [Aicuflow](https://aicuflow.com) by AICU GmbH makes it possible! Actually, more than that: pretty menus, inputs, plots and sensor streaming to the cloud - with some free data storage.
 
+This code automatically detects your device properties (wifi, tft display, sensors) and adjusts to it - you don't need to set anything up after loading this repository. No need to install external libraries or dependencies, they are packaged under the `imports` folder.
+
+If you just want to get the `AicuClient.cpp` code, it is under `library/aicuflow`. But there is more cool features worthwile exploring in this codebase (check images below)!
+
 ![](https://aicuflow.com/docs/library/arduino/esp32title.png)
 
 (Preferably you would want to use WiFi capable oards similar to the ESP32 for this)
@@ -33,19 +37,18 @@ git clone https://github.com/AICU-HEALTH/aicuflow-arduino
 
 1. Install Arduino IDE
 2. Install ESP32 Board in it (official Espressif version)
-3. Install Libraries (Search in Arduino IDE)
-   - TFT_eSPI (needs setup, see TFT Setup below)
-   - ArduinoJSON
-4. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
+3. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 
 In the main sketch (`aicuflow-arduino.ino`), search for **add more**, and you will find many options to add customisations (sensors, menus, pages).
 
 ### Change factory settings
 
-You can manually set up the settings on each device via buttons, or flash them with custom built firmware containing your settings. Check `aicuflow-arduino.ino` and customise factory settings.
+You can manually set up the settings on each device via buttons, or flash them with custom built firmware and your own factory settings.
+
+Check `aicuflow-arduino.ino` and customise factory settings.
 
 ```cpp
-// START FACTORY SETTINGS REPLACE THIS
+// === Setup ===
 // needed to work
 const char* WLAN_SSID = "your-wlan"; // connect to a stable WPA2 Wifi
 const char* WLAN_PASS = "your-pass";
@@ -62,12 +65,9 @@ const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may
 const int MEASURE_DELAY_MS = 100;
 const int SCREEN_IDLE_MS = 60000; // also needs TFT_BL eg 38
 const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
-// END FACTORY SETTINGS REPLACE THIS
 ```
 
-## Setup troubleshooting
-
-### Supported devices
+## Supported Boards and Fixes
 
 We tested this on a hand full of arduino-compatible devices. To be on the safe side, we recommend you use one of these boards. Others may still work, but are not present in our [hardware lab](https://aicuflow.com/docs/library/arduino).
 
@@ -78,31 +78,9 @@ We tested this on a hand full of arduino-compatible devices. To be on the safe s
 
 More are coming once we are moving to a stable beta.
 
-### Loader mode of Lilygo T-Display S3
+Known issues and Fixes:
 
-Can't find its serial port? Long press left, keep, short click sidebutton.
-
-### TFT Setup
-
-Open your file manager. Go to Documents > Arduino > libraries > TFT_eSPI.
-
-You need to customise `User_Setup_Select.h` file in there (comment 1 line and uncomment 1 line).
-
-Example for esp32 ttgo t1:
-
-```cpp
-// TFT_eSPI: Needs modifications under Arduino/libraries/TFT_eSPI/User_Setup_Select.h:
-//   UNCOMMENT THIS in that file:
-//   // #include <User_Setups/Setup25_TTGO_T_Display.h>    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
-//   COMMENT THIS out in that file:
-//   #include <User_Setup.h>           // Default setup is root library folder
-```
-
-Similar for the Adafruit T-Display.
-
-For other boards, you just search the board / display name in the setup file. It basically contains definitions of the connections between your board and the display.
-
-### Known issues and Fixes
+- **Not uploading?** Can't find its serial port? -> If you're on the Lilygo T-Display S3, you can activate the loader mode by long pressing left, keeping, then short clicking sidebutton. On other ESP32 Modules
 
 - **Compile error** with tft on non-tft devices containing `gpio_input_get` -> compile on arduino platform `esp32:esp32@2.0.17` instead of the default `3.1.0` (everything should work on there too, but imports are a bit different)
 
@@ -110,7 +88,7 @@ For other boards, you just search the board / display name in the setup file. It
 
 ## Roadmap
 
-This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) is quite new. So lots to do.
+This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) works out of the box or can be included as a library in custom projects. We're expanding support for more devices and use-cases.
 
 ### Already working features
 
@@ -120,11 +98,15 @@ Library (folder `library/*`, see `examples/*`)
 - automatic scrolling line graphs on tft display
 - simple sensor detection, measuring and chunked streaming
 - user driveable menus & config
+- auto tft_espi screen selection (needs more boards)
+- freezed libraries ArduinoJson and TFT_eSPI
 
 Aicu Embedded OS (`aicuflow-arduino.ino`)
 
 - wifi connection with timeout
 - aicuflow logo tft boot animation and screen timeout
+- multilingual mode (EN, DE)
+- settings configuration using device buttons
 
 ### Planned features
 
@@ -137,8 +119,6 @@ needed
 
 cool
 
-- multilingual mode
-- auto tft config
 - multi-wifi setup
 - automatic sensor plug and play (would be cool)
 - station mode to config using webserver

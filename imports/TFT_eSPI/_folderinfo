@@ -12,4 +12,5 @@ instead of
 ```
 
 It is included here, so users don't have to install it when cloning this repository.
-Also, we try to automatically adjust the clients User_Setup_Select.h based on the active board (currently only for lilygo t-display and ttgo-t1).
+
+(!!!) Also, we try to automatically adjust the clients `User_Setup_Select.h` based on the active board (currently only for lilygo t-display and ttgo-t1).

@@ -18,6 +18,20 @@
 #ifndef USER_SETUP_LOADED //  Lets PlatformIO users define settings in
                           //  platformio.ini, see notes in "Tools" folder.
 
+// AICUFLOW CONFIGURES THESE BOARDS AUTOMATICALLY
+
+#if defined(ARDUINO_LILYGO_T_DISPLAY_S3) || defined(CONFIG_IDF_TARGET_ESP32S3)
+  #include "User_Setups/Setup206_LilyGo_T_Display_S3.h"     // For the LilyGo T-Display S3 based ESP32S3 with ST7789 170 x 320 TFT
+#elif defined(ARDUINO_TTGO_TDISPLAY) || defined(ARDUINO_T_Display) || defined(ESP32)
+  #include "User_Setups/Setup25_TTGO_T_Display.h"           // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
+#else
+  // #warning "Unknown board – defaulting to TTGO T-Display (T1)"
+  #include "User_Setups/Setup25_TTGO_T_Display.h"           // Default to this so it compiles still
+#endif
+
+// IF YOU NEED MORE, TAKE THE CONFIGS FROM BELOW
+// AND CHANGE `library/device/DeviceProps.cpp` FOR MORE
+
 ///////////////////////////////////////////////////////
 //   User configuration selection lines are below    //
 ///////////////////////////////////////////////////////
@@ -55,7 +69,6 @@
 //#include <User_Setups/Setup22_TTGO_T4_v1.3.h>      // Setup file for ESP32 and TTGO T4 version 1.3
 //#include <User_Setups/Setup23_TTGO_TM.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
 //#include <User_Setups/Setup24_ST7789.h>            // Setup file for DSTIKE/ESP32/ESP8266 configured for ST7789 240 x 240
-// !!!! // #include <User_Setups/Setup25_TTGO_T_Display.h>    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
 //#include <User_Setups/Setup26_TTGO_T_Wristband.h>  // Setup file for ESP32 and TTGO T-Wristband ST7735 SPI bus TFT
 
 //#include <User_Setups/Setup27_RPi_ST7796_ESP32.h>    // ESP32   RPi MHS-4.0 inch Display-B
@@ -130,9 +143,6 @@
 
 //#include <User_Setups/Setup205_ESP32_TouchDown_S3.h>     // Setup file for the ESP32 TouchDown S3 based on ILI9488 480 x 320 TFT 
 
-
-// !!! #
-#include "User_Setups/Setup206_LilyGo_T_Display_S3.h"     // For the LilyGo T-Display S3 based ESP32S3 with ST7789 170 x 320 TFT
 //#include <User_Setups/Setup207_LilyGo_T_HMI.h>            // For the LilyGo T-HMI S3 based ESP32S3 with ST7789 240 x 320 TFT
 //#include <User_Setups/Setup209_LilyGo_T_Dongle_S3.h>      // For the LilyGo T-Dongle S3 based ESP32 with ST7735 80 x 160 TFT
 //#include <User_Setups/Setup210_LilyGo_T_Embed_S3.h>         // For the LilyGo T-Embed S3 based ESP32S3 with ST7789 170 x 320 TFT

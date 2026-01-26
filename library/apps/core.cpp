@@ -117,6 +117,8 @@ void setupPages() {
   
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
+
+  pageManager->setDefaultPage(device->has_display ? "menu" : "measure");
 }
 void onMenuPageOpen() {
   tft.fillScreen(TFT_BLACK);
