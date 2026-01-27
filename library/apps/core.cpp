@@ -28,6 +28,11 @@
 
 void setupMenus() {
   const char* s_back = en_de("Back", "Zurueck");
+  // microcontroller tools
+  mucToolsMenu = new TFTMenu(&tft, en_de("Hardware", "Hardware"));
+  mucToolsMenu->addBackItem(s_back);
+  mucToolsMenu->addItem(en_de("HW-Diagram", "HW-Diagramm"), []() { pageManager->openPage("architecture"); });
+
   // connection tools
   connectToolsMenu = new TFTMenu(&tft, en_de("Wireless", "Funk"));
   connectToolsMenu->addBackItem(s_back);
@@ -35,12 +40,9 @@ void setupMenus() {
   connectToolsMenu->addItem(en_de("BT Scan", "BT Suche"), []() { pageManager->openPage("btscan"); });
 
   // graphicstest
-  graphicsMenu = new TFTMenu(&tft, en_de("Graphics", "Grafik"));
+  graphicsMenu = new TFTMenu(&tft, en_de("Graphics", "Grafiken"));
   graphicsMenu->addBackItem(s_back);
   graphicsMenu->addItem(en_de("QR-Code", "QR-Code"), []() { pageManager->openPage("qr"); });
-  graphicsMenu->addItem(en_de("HW-Diagram", "HW-Diagramm"), []() { pageManager->openPage("architecture"); });
-  graphicsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
-  graphicsMenu->addItem(en_de("3D Objects", "3D Objekte"), []() { pageManager->openPage("3d"); });
   graphicsMenu->addItem(en_de("Color Test", "Farbtest"), []() { pageManager->openPage("colors"); });
   graphicsMenu->addItem(en_de("Color Wheel", "Farbrad"), []() { pageManager->openPage("colorwheel"); });
   graphicsMenu->addItem(en_de("Random Color", "Farbrauschen"), []() { pageManager->openPage("random"); });
@@ -50,12 +52,15 @@ void setupMenus() {
   gamesMenu->addBackItem(s_back);
   gamesMenu->addItem(en_de("Snake Game", "Snake Spiel"), []() { pageManager->openPage("snake"); });
   gamesMenu->addItem("Game of Life", []() { pageManager->openPage("gol"); });
+  gamesMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
+  gamesMenu->addItem(en_de("3D Objects", "3D Objekte"), []() { pageManager->openPage("3d"); });
 
   // tools
   toolsMenu = new TFTMenu(&tft, "Tools");
   toolsMenu->addBackItem(s_back);
-  toolsMenu->addSubmenu(en_de("Wireless", "Funk"), connectToolsMenu);
-  toolsMenu->addSubmenu(en_de("Graphics", "Grafik"), graphicsMenu);
+  toolsMenu->addSubmenu(en_de("Hardware", "Hardware"), mucToolsMenu);
+  toolsMenu->addSubmenu(en_de("Wireless", "Funkmodule"), connectToolsMenu);
+  toolsMenu->addSubmenu(en_de("Graphics", "Grafiken"), graphicsMenu);
   toolsMenu->addSubmenu(en_de("Games","Spiele"), gamesMenu);
   
   // wifi settings
@@ -75,19 +80,24 @@ void setupMenus() {
   aicuAPIMenu->addItem(en_de("File Name", "Dateiname"), []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
   
   // settings
+  btnSetMenu = new TFTMenu(&tft, en_de("Manual Setup", "Manuell Setup"));
+  btnSetMenu->addBackItem(s_back);
+  btnSetMenu->addSubmenu(en_de("WiFi Settings", "Wlan Zugang"), wifiMenu);
+  btnSetMenu->addSubmenu("Aicuflow API", aicuAPIMenu);
+  btnSetMenu->addItem(en_de("Language: EN", "Language: DE"), []() { locale = locale == "en" ? "de" : "en"; saveSettings(); esp_restart(); });
+  btnSetMenu->addItem(en_de("Restart Device", "Neu starten"), []() { esp_restart(); });
+
+  // settings
   settingsMenu = new TFTMenu(&tft, en_de("Settings", "Einstellungen"));
   settingsMenu->addBackItem(s_back);
   settingsMenu->addItem(en_de("Easy Setup", "Leichtes Setup"),  []() { pageManager->openPage("webset"); });
-  settingsMenu->addSubmenu(en_de("WiFi Settings", "Wlan Zugang"), wifiMenu);
-  settingsMenu->addSubmenu("Aicuflow API", aicuAPIMenu);
-  settingsMenu->addItem(en_de("Language: EN", "Language: DE"), []() { locale = locale == "en" ? "de" : "en"; saveSettings(); esp_restart(); });
-  settingsMenu->addItem(en_de("Factory Reset", "Zurucksetzen"), []() { clearSettings(); esp_restart(); });
-  settingsMenu->addItem(en_de("Restart Device", "Neu starten"), []() { esp_restart(); });
+  settingsMenu->addSubmenu(en_de("Manual Setup", "Manuell Setup"), btnSetMenu);
   settingsMenu->addItem(en_de("Tutorial", "Einfuehrung"), []() { pageManager->openPage("tutorial"); });
+  settingsMenu->addItem(en_de("Factory Reset", "Zurucksetzen"), []() { clearSettings(); esp_restart(); });
 
   // main
   mainMenu = new TFTMenu(&tft, en_de("Aicuflow IoT+AI", "Aicuflow IoT+KI"));
-  mainMenu->addItem(en_de("Start", "Start"), []() { pageManager->openPage("measure"); });
+  mainMenu->addItem(en_de("Measure", "Messung"), []() { pageManager->openPage("measure"); });
   mainMenu->addSubmenu(en_de("Tools", "Tools"), toolsMenu);
   mainMenu->addSubmenu(en_de("Setup", "Setup"), settingsMenu);
   mainMenu->addItem(en_de("About", "Infos"), []() { pageManager->openPage("about"); });

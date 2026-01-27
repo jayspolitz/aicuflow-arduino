@@ -26,7 +26,7 @@ extern void registerSensors();
 
 // vars exported
 TFTMenu *mainMenu, *toolsMenu, *gamesMenu, *graphicsMenu, *connectToolsMenu;
-TFTMenu *settingsMenu, *wifiMenu, *aicuAPIMenu;
+TFTMenu *settingsMenu, *wifiMenu, *aicuAPIMenu, *btnSetMenu, *mucToolsMenu;
 
 TFTKeyboard* keyboard;
 
