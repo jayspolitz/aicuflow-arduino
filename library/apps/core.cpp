@@ -17,6 +17,7 @@
 #include "library/apps/wireframe3d.cpp"       // page: 3d rotation renderer
 #include "library/apps/aicuflow_tutorial.cpp" // page: tutorial
 #include "library/apps/architecture.cpp"      // page: hw archi
+#include "library/apps/create_flow.cpp"       // page: create flow
 // add more pages here
 // #include "library/apps/_expand.cpp"        // page: custom page
 
@@ -65,6 +66,7 @@ void setupMenus() {
   aicuAPIMenu->addBackItem(s_back);
   aicuAPIMenu->addItem(en_de("User Mail", "Login Mail"), []() { pageManager->openPage("keyboard", (void*)5); });
   aicuAPIMenu->addItem(en_de("User Passwd.", "Login Passwd."), []() { pageManager->openPage("keyboard", (void*)6); });
+  aicuAPIMenu->addItem(en_de("Create Flow", "Neuer Flow"), []() { pageManager->openPage("create", (void*)6); });
   aicuAPIMenu->addItem(en_de("Flow ID", "Flow Id"), []() { pageManager->openPage("keyboard", (void*)7); });
   aicuAPIMenu->addItem(en_de("Device Name", "Geraetename"), []() { pageManager->openPage("keyboard", (void*)1); }); // 1 = device name context
   aicuAPIMenu->addItem(en_de("File Name", "Dateiname"), []() { pageManager->openPage("keyboard", (void*)2); }); // 2 = streamfilename context
@@ -106,6 +108,7 @@ void setupPages() {
   pageManager->registerPage("measure", measurementSetup, onMeasurePageUpdate, 0, false); // no delay!
   pageManager->registerPage("about", onAboutPageOpen, closePageIfAnyButtonIsPressed);
   pageManager->registerPage("tutorial", onAicuflowTutorialPageOpen, onAicuflowTutorialPageUpdate, 20, true, true); // delay, keep screen awake!
+  pageManager->registerPage("create", onCreateFlowPageOpen, onCreateFlowPageUpdate);
   
   pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
   pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
