@@ -20,6 +20,7 @@
 #include "library/apps/create_flow.cpp"       // page: create flow
 #include "library/apps/qrcode.cpp"            // page: qr code
 #include "library/apps/settingsweb.cpp"       // page: web settings config
+#include "library/apps/serialmonitor.cpp"     // page: serial monitor
 // add more pages here
 // #include "library/apps/_expand.cpp"        // page: custom page
 
@@ -32,6 +33,7 @@ void setupMenus() {
   mucToolsMenu = new TFTMenu(&tft, en_de("Hardware", "Hardware"));
   mucToolsMenu->addBackItem(s_back);
   mucToolsMenu->addItem(en_de("HW-Diagram", "HW-Diagramm"), []() { pageManager->openPage("architecture"); });
+  mucToolsMenu->addItem(en_de("Serialmonitor", "UART Logger"), []() { pageManager->openPage("serial"); });
 
   // connection tools
   connectToolsMenu = new TFTMenu(&tft, en_de("Wireless", "Funk"));
@@ -137,6 +139,7 @@ void setupPages() {
   pageManager->registerPage("3d", onWireframe3dPageOpen, onWireframe3dPageUpdate);
   pageManager->registerPage("qr", onQRCodePageOpen, onQRCodePageUpdate, 20, true, true); // no timeout
   pageManager->registerPage("webset", onSettingsWebPageOpen, onSettingsWebPageUpdate, 20, true, true); // no timeout
+  pageManager->registerPage("serial", onSerialMonitorPageOpen, onSerialMonitorPageUpdate, 20, true, true); // no timeout
   
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
