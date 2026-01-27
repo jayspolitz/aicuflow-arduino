@@ -38,7 +38,6 @@ class TFTMenu {
 private:
   TFT_eSPI* tft;
   std::vector<MenuItem*> items;
-  int selectedIndex;
   int previousSelectedIndex;
   TFTMenu* parentMenu;
   TFTMenu* activeMenu;  // Track which menu is actually active
@@ -116,7 +115,8 @@ public:
   void setActive();
   bool isActive();
   static TFTMenu* currentActiveMenu;
-  
+  int selectedIndex;
+
 private:
   void drawHeader();
   void drawMenuItem(int index, int yPos, bool isSelected);

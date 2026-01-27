@@ -19,6 +19,7 @@
 #include "library/apps/architecture.cpp"      // page: hw archi
 #include "library/apps/create_flow.cpp"       // page: create flow
 #include "library/apps/qrcode.cpp"            // page: qr code
+#include "library/apps/settingsweb.cpp"       // page: web settings config
 // add more pages here
 // #include "library/apps/_expand.cpp"        // page: custom page
 
@@ -76,6 +77,7 @@ void setupMenus() {
   // settings
   settingsMenu = new TFTMenu(&tft, en_de("Settings", "Einstellungen"));
   settingsMenu->addBackItem(s_back);
+  settingsMenu->addItem(en_de("Easy Setup", "Leichtes Setup"),  []() { pageManager->openPage("webset"); });
   settingsMenu->addSubmenu(en_de("WiFi Settings", "Wlan Zugang"), wifiMenu);
   settingsMenu->addSubmenu("Aicuflow API", aicuAPIMenu);
   settingsMenu->addItem(en_de("Language: EN", "Language: DE"), []() { locale = locale == "en" ? "de" : "en"; saveSettings(); esp_restart(); });
@@ -124,6 +126,7 @@ void setupPages() {
   pageManager->registerPage("mandelbrot", onMandelbrotPageOpen, onMandelbrotPageUpdate);
   pageManager->registerPage("3d", onWireframe3dPageOpen, onWireframe3dPageUpdate);
   pageManager->registerPage("qr", onQRCodePageOpen, onQRCodePageUpdate, 20, true, true); // no timeout
+  pageManager->registerPage("webset", onSettingsWebPageOpen, onSettingsWebPageUpdate, 20, true, true); // no timeout
   
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);

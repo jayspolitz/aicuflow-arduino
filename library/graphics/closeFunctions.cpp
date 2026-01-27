@@ -1,9 +1,20 @@
 #include "library/graphics/PageManager.h"
+#include "library/graphics/TFTMenu.h"
 
 extern int LEFT_BUTTON;
 extern int RIGHT_BUTTON;
 extern PageManager* pageManager;
+extern TFTMenu* mainMenu;
 
+void closePage() {
+  pageManager->returnToPrevious();
+}
+void toStartPage() {
+  pageManager->openPage("menu");
+  mainMenu->setActive();
+  mainMenu->selectedIndex = 0;
+  mainMenu->begin();
+}
 void closePageIfAnyButtonIsPressed() {
   if (digitalRead(LEFT_BUTTON) == LOW || digitalRead(RIGHT_BUTTON) == LOW) {
     pageManager->returnToPrevious();
