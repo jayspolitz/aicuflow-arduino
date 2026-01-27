@@ -29,7 +29,6 @@ For more details and examples, refer to our [documentation](https://aicuflow.com
 
 <div align="center"> <img src="https://aicuflow.com/docs/library/arduino/esp32sensors.webp" width="50%" /> </div>
 
-
 ![Cool demo screenshots](https://aicuflow.com/docs/library/arduino/esp32coolscreens.webp)
 
 ## Quickstart
@@ -44,7 +43,7 @@ git clone https://github.com/AICU-HEALTH/aicuflow-arduino
 
 ### Short install guide
 
-1. Install Arduino IDE
+1. Install Arduino IDE (v2.3.7 at time of writing)
 2. Install ESP32 Board in it (official Espressif version)
 3. Open `aicuflow-arduino` in arduino IDE and customise settings section (Wifi, [Aicuflow Flow Id](https://aicuflow.com/flows), Details)
 

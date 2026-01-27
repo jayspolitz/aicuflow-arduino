@@ -18,6 +18,7 @@
 #include "library/apps/aicuflow_tutorial.cpp" // page: tutorial
 #include "library/apps/architecture.cpp"      // page: hw archi
 #include "library/apps/create_flow.cpp"       // page: create flow
+#include "library/apps/qrcode.cpp"            // page: qr code
 // add more pages here
 // #include "library/apps/_expand.cpp"        // page: custom page
 
@@ -35,6 +36,7 @@ void setupMenus() {
   // graphicstest
   graphicsMenu = new TFTMenu(&tft, en_de("Graphics", "Grafik"));
   graphicsMenu->addBackItem(s_back);
+  graphicsMenu->addItem(en_de("QR-Code", "QR-Code"), []() { pageManager->openPage("qr"); });
   graphicsMenu->addItem(en_de("HW-Diagram", "HW-Diagramm"), []() { pageManager->openPage("architecture"); });
   graphicsMenu->addItem("Mandelbrot", []() { pageManager->openPage("mandelbrot"); });
   graphicsMenu->addItem(en_de("3D Objects", "3D Objekte"), []() { pageManager->openPage("3d"); });
@@ -121,6 +123,7 @@ void setupPages() {
   pageManager->registerPage("gol", onGameOfLifePageOpen, onGameOfLifePageUpdate);
   pageManager->registerPage("mandelbrot", onMandelbrotPageOpen, onMandelbrotPageUpdate);
   pageManager->registerPage("3d", onWireframe3dPageOpen, onWireframe3dPageUpdate);
+  pageManager->registerPage("qr", onQRCodePageOpen, onQRCodePageUpdate, 20, true, true); // no timeout
   
   // add more apps here, see `library/apps/_expand.cpp`
   // pageManager->registerPage("[appname]", onPageOpen, onPageUpdate);
