@@ -240,42 +240,42 @@ void connectAPI() {
 }
 
 void registerAllSensors() {
-  // registerSensor(key, label, readFunc, min, max, color, enabled, showGraph)
-  sensors.registerSensor("left_button", "Button L", 
+  // registerSensor(key, readFunc, min, max, color, enabled, showGraph)
+  sensors.registerSensor("left_button"
     [&]() { return digitalRead(BUTTON_L) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_PURPLE, LOG_SEND, SHOW_GRAPH);
-  sensors.registerSensor("right_button", "Button R",
+  sensors.registerSensor("right_button"
     [&]() { return digitalRead(BUTTON_R) == 0 ? 1.0 : 0.0; },
     0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
-  if (device->has_wifi) sensors.registerSensor("rssi", "RSSI (dBm)",
+  if (device->has_wifi) sensors.registerSensor("rssi",
     []() { return (double)WiFi.RSSI(); },
     -100, -30, TFT_GREEN, LOG_SEND, SHOW_GRAPH);
-  sensors.registerSensor("voltage", "Voltage (V)", // 2=ResDiv;3.3RefV;4095-12-bitADCres
+  sensors.registerSensor("voltage", // 2=ResDiv;3.3RefV;4095-12-bitADCres
     []() { return (analogRead(34)/4095.0)*2.0*3.3*1.1; },
     2.0, 6.0, TFT_RED, LOG_SEND, SHOW_GRAPH);
-  sensors.registerSensor("temperature", "Temp (°C)",
+  sensors.registerSensor("temperature",
     []() { return temperatureRead(); },
     20, 60, TFT_ORANGE, LOG_SEND, SHOW_GRAPH);
-  sensors.registerSensor("heapfree", "Heap (KB)",
+  sensors.registerSensor("heapfree",
     []() { return ESP.getFreeHeap() / 1024.0; },
     100, 300, TFT_CYAN, LOG_SEND, SHOW_GRAPH);
-  sensors.registerSensor("cpu_freq_hz", "CPU (MHz)",
+  sensors.registerSensor("cpu_freq_hz",
     []() { return (double)getCpuFrequencyMhz(); },
     80, 240, TFT_YELLOW, LOG_SEND, HIDE_GRAPH);
   
   // More sensors?
   // Ex1) Custom analog sensor
-  // sensors.registerSensor("light", "Light",
+  // sensors.registerSensor("light",
   //  []() { return analogRead(35) / 4095.0 * 100; },
   //  0, 100, TFT_WHITE, LOG_SEND, SHOW_GRAPH);
   
   // Ex2) Not graphed sensor
-  // sensors.registerSensor("uptime", "Uptime (s)",
+  // sensors.registerSensor("uptime",
   //  []() { return millis() / 1000.0; },
   //  0, 86400, TFT_MAGENTA, LOG_SEND, HIDE_GRAPH);
   
   // Ex3) Disabled sensor
-  // sensors.registerSensor("unused", "Unused",
+  // sensors.registerSensor("unused",
   //  []() { return 0.0; },
   //  0, 1, TFT_WHITE, LOG_NONE, HIDE_GRAPH);
 

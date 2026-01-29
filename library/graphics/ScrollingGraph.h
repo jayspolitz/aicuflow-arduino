@@ -11,12 +11,11 @@ private:
   TFT_eSprite spr;
   int _x, _y, _w, _h;
   uint16_t _color;
-  const char* _label;
   float* _values;
   int _count;
   
 public:
   ScrollingGraph(TFT_eSPI* tft);
-  void begin(int x, int y, int w, int h, float minVal, float maxVal, uint16_t color, const char* label);
+  void begin(int x, int y, int w, int h, float minVal, float maxVal, uint16_t color);
   void update(float val);
 };

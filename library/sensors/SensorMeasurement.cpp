@@ -21,13 +21,12 @@ SensorMeasurement::~SensorMeasurement() {
     }
 }
 
-void SensorMeasurement::registerSensor(const char* key, const char* label,
+void SensorMeasurement::registerSensor(const char* key,
                                       std::function<double()> readFunc,
                                       double min, double max, uint16_t color,
                                       bool enabled, bool showGraph) {
     SensorDef def = {
         .key = key,
-        .label = label,
         .read = readFunc,
         .min = min,
         .max = max,
@@ -114,7 +113,7 @@ void SensorMeasurement::initGraphs(TFT_eSPI* tft, int screenWidth, int screenHei
         ScrollingGraph* graph = new ScrollingGraph(tft);
         graph->begin(0, yOffset, screenWidth, graphBarHeight,
                     sensors[i].min, sensors[i].max,
-                    sensors[i].color, sensors[i].label);
+                    sensors[i].color);
         graphs.insert(graphs.begin(), graph);
     }
 }
@@ -134,7 +133,7 @@ void SensorMeasurement::printValues() const {
     Serial.print("Timestamp: "); Serial.println(timestamp);
     for (size_t i = 0; i < sensors.size(); i++) {
         if (sensors[i].enabled) {
-            Serial.print(sensors[i].label); 
+            Serial.print(sensors[i].key); 
             Serial.print(": "); 
             Serial.println(values[i]);
         }

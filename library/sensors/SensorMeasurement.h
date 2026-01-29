@@ -27,7 +27,6 @@ class TFT_eSPI;
  */
 struct SensorDef {
     const char* key;                   // JSON key & internal identifier
-    const char* label;                 // Display label
     std::function<double()> read;      // Function to read sensor value
     double min;                        // Min value for graphing
     double max;                        // Max value for graphing
@@ -47,7 +46,7 @@ public:
     ~SensorMeasurement();
 
     // Core sensor registration - use this for everything!
-    void registerSensor(const char* key, const char* label, 
+    void registerSensor(const char* key, 
                        std::function<double()> readFunc,
                        double min, double max, uint16_t color,
                        bool enabled = true, bool showGraph = true);
