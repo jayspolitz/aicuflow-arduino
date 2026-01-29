@@ -18,11 +18,15 @@ String urlDecode(String str);
 
 // ------------------- Hotspot -------------------
 void startSettingsAP() {
-    if(VERBOSE) Serial.println("Starting AP...");
+    #if VERBOSE
+        Serial.println("Starting AP...");
+    #endif
     WiFi.mode(WIFI_AP);
     WiFi.softAP("aicuflow");
     IPAddress myIP = WiFi.softAPIP();
-    if(VERBOSE) Serial.printf("AP IP: %s\n", myIP.toString().c_str());
+    #if VERBOSE
+        Serial.printf("AP IP: %s\n", myIP.toString().c_str());
+    #endif
 }
 
 // ------------------- Draw Instructions -------------------
@@ -156,7 +160,9 @@ void handleClient() {
         saveSettings();
         applySettings();
 
-        if (VERBOSE) Serial.println("Settings saved");
+        #if VERBOSE
+            Serial.println("Settings saved");
+        #endif
 
         // Send success page
         String html = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
@@ -213,7 +219,9 @@ void onSettingsWebPageOpen() {
         startSettingsAP();
         server = new WiFiServer(80);
         server->begin();
-        if(VERBOSE) Serial.println("Server started");
+        #if VERBOSE
+            Serial.println("Server started");
+        #endif
         started = true;
     }
     drawSettingsScreen();

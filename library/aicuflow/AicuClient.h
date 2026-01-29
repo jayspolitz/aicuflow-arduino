@@ -8,7 +8,7 @@
 
 class AicuClient {
 public:
-    AicuClient(const String& baseUrl = "https://prod-backend.aicuflow.com", bool verbose = false);
+    AicuClient(const String& baseUrl = "https://prod-backend.aicuflow.com");
 
     void setWiFiClient(WiFiClientSecure* client);
     void setToken(const String& token);
@@ -31,7 +31,6 @@ public:
 private:
     String _baseUrl;
     String _authHeader;
-    bool _verbose;
     WiFiClientSecure* _client = nullptr;
 
     bool _getJson(const String& path, JsonDocument& doc);

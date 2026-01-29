@@ -30,16 +30,20 @@ void initSerial() {
   Serial.begin(115200); // Serial.begin(0); would try to detect
   // if (Serial.baudRate() == 0) // no rate detected
   while (!Serial && millis() < 500) delay(10);
-  if (VERBOSE) Serial.println("Hello World!");
-  delay(500);
-  Serial.print("Aicuflow booted on "); Serial.print(device->kind_slug); Serial.println("!");
+  #if VERBOSE
+    Serial.println("Hello World!");
+    delay(500);
+    Serial.print("Aicuflow booted on "); Serial.print(device->kind_slug); Serial.println("!");
+  #endif
 }
 
 void initTFTScreen() {
   screenWidth  = tft.width();
   screenHeight = tft.height();
-  if (VERBOSE) Serial.print("Width: "); Serial.println(screenWidth);   // ttgo-t1: 135 
-  if (VERBOSE) Serial.print("Height: "); Serial.println(screenHeight); // ttgo-t1: 240
+  #if VERBOSE
+    Serial.print("Width: "); Serial.println(screenWidth);   // ttgo-t1: 135 
+    Serial.print("Height: "); Serial.println(screenHeight); // ttgo-t1: 240
+  #endif
   tft.init();
   
   pinMode(TFT_BL, OUTPUT);
@@ -86,8 +90,8 @@ void initSensorGraphs() {
     tft.setTextColor(TFT_WHITE);
   }
   sensors.initGraphs(&tft, screenWidth, screenHeight);
-  if (VERBOSE) {
+  #if VERBOSE
     Serial.print("Graphed sensors: ");
     Serial.println(sensors.getGraphCount());
-  }
+  #endif
 }

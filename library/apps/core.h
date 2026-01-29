@@ -16,7 +16,6 @@ extern const DeviceProps* device;
 extern int screenWidth;
 extern int screenHeight;
 extern bool wifiAvailable;
-extern const int VERBOSE;
 extern const int SCREEN_IDLE_MS;
 extern int LEFT_BUTTON;
 extern int RIGHT_BUTTON;

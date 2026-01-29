@@ -125,7 +125,9 @@ void onMeasurePageUpdate() {
   sensors.measure();
 
   // Forward Data
-  if (VERBOSE && !device->has_display)    sensors.printValues(); // May be BLOCKING!
+  #if VERBOSE
+    if (!device->has_display)   sensors.printValues(); // May be BLOCKING!
+  #endif
   if (pageManager->screenAwake && device->has_display) // save energy
                                          sensors.updateGraphs();
   if (wifiAvailable && device->has_wifi)  addSampleAndAutoSend();

@@ -7,7 +7,6 @@
 // use the global ones
 extern const DeviceProps* device;
 extern SensorMeasurement sensors;
-extern const int VERBOSE;
 
 // import factory settings
 extern const char* WLAN_SSID;

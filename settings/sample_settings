@@ -10,7 +10,6 @@ const char* PROJ_FLOW = "your-ai-cu-flow-uuid"; // create / select at https://ai
 
 // optional options
 const char* PROJ_FILE = "esp32"; // will be auto created with .arrow extension
-const int VERBOSE = true;
 const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
 const char* DEVICE_ID_SUFFIX = ""; // 0,1,2,3 appended to id if you have multiple of same kind
 const int POINTS_BATCH_SIZE = 64; // 64 always works, 256 sometimes did, but may be too large.

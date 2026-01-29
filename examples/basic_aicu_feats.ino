@@ -9,7 +9,7 @@
  *  Check https://aicuflow.com/docs/library/arduino for more!
  */
 
-
+#define VERBOSE true
 
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -26,7 +26,7 @@ const char* PROJ_FLOW = "your-ai-cu-flow-uuid";
 const char* PROJ_FILE = "stream-test";
 
 WiFiClientSecure client;
-AicuClient aicu("https://prod-backend.aicuflow.com", true);
+AicuClient aicu("https://prod-backend.aicuflow.com");
 
 
 

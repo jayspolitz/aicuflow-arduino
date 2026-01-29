@@ -17,7 +17,8 @@
  */
 
 // === Compiler Config ===
-#define USE_BLUETOOTH false // BT-LE is ca 1mb large, thus optional
+#define USE_BLUETOOTH false  // BT-LE is ca 1mb large, thus optional
+#define VERBOSE false        // Debugging recommended for developers
 
 // === Imports ===
 #include <WiFiClientSecure.h>                    // WPA2/3? alt (insecure): #include <WiFiClient.h>
@@ -44,7 +45,6 @@ const char* PROJ_FLOW = ""; // create / select at https://aicuflow.com/flows
 
 // optional options
 const char* PROJ_FILE = "esp";     // will be auto created with .arrow extension
-const int VERBOSE = true;
 const char* API_URL = "https://prod-backend.aicuflow.com"; // dev or prod
 const char* DEVICE_ID_SUFFIX = ""; // 0,1,2,3 appended to id if you have multiple of same kind
 const int POINTS_BATCH_SIZE = 64;  // 64 always works, 256 sometimes did, but may be too large.
@@ -55,7 +55,7 @@ const int WIFI_TIMEOUT = 10000;    // 10s, 0 -> blocking till wifi
 // === Globals ===
 // Do not change these, app needs em
 WiFiClientSecure client;             // secure wifi conn
-AicuClient aicu(API_URL, VERBOSE);   // aicu api client
+AicuClient aicu(API_URL);            // aicu api client
 TFT_eSPI tft = TFT_eSPI();           // screen stuff
 SensorMeasurement sensors("");       // sensor registry (->graphs,measure)
 const DeviceProps* device = nullptr; // auto device info here

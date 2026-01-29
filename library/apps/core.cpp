@@ -195,7 +195,9 @@ void onTextConfirmed(String text) {
 
   saveSettings();
   applySettings();
-  if(VERBOSE) Serial.println("Saved: " + text);
+  #if VERBOSE
+    Serial.println("Saved: " + text);
+  #endif
   pageManager->returnToPrevious();
   pageManager->blockInputFor(300);
 }

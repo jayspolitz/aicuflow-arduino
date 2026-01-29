@@ -34,11 +34,11 @@ void loadSettings() {
   deviceName = preferences.getString("deviceName", String(device->kind_short) + DEVICE_ID_SUFFIX);
 
   preferences.end();
-  if (VERBOSE) {
+  #if VERBOSE
     Serial.println("Loaded pref name: " + deviceName);
     Serial.println("Loaded pref fname: " + streamFileName);
     // tbd more
-  }
+  #endif
 }
 
 void saveSettings() {
@@ -57,14 +57,18 @@ void saveSettings() {
   preferences.putString("deviceName", deviceName);
 
   preferences.end();
-  if (VERBOSE) Serial.println("Prefs saved to mem!");
+  #if VERBOSE
+    Serial.println("Prefs saved to mem!");
+  #endif
 }
 
 void clearSettings() {
   preferences.begin(PREFS, false);
   preferences.clear();
   preferences.end();
-  if (VERBOSE) Serial.println("Prefs cleared!");
+  #if VERBOSE
+    Serial.println("Prefs cleared!");
+  #endif
 }
 
 void applySettings() {

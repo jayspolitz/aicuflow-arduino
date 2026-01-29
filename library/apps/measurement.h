@@ -18,7 +18,6 @@ extern const DeviceProps* device;
 extern int screenWidth;
 extern int screenHeight;
 extern bool wifiAvailable;
-extern const int VERBOSE;
 extern const int WIFI_TIMEOUT;
 extern const int MEASURE_DELAY_MS;
 extern const int POINTS_BATCH_SIZE;

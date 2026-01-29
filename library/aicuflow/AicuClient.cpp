@@ -1,9 +1,13 @@
 #include "AicuClient.h"
 // or #include "aicuflow/AicuClient.h"
 
+#ifndef VERBOSE
+    #define VERBOSE false // default it is not verbose
+#endif
+
 // ---- constructor ----
-AicuClient::AicuClient(const String& baseUrl, bool verbose)
-: _baseUrl(baseUrl), _verbose(verbose) {}
+AicuClient::AicuClient(const String& baseUrl)
+: _baseUrl(baseUrl) {}
 
 // ---- set TLS client ----
 void AicuClient::setWiFiClient(WiFiClientSecure* client) {
@@ -27,12 +31,17 @@ bool AicuClient::login(const String& email, const String& password) {
 
     const char* token = response["data"]["accesstoken"];
     if (!token || strlen(token) == 0) {
-        if (_verbose) Serial.println("Token missing in login response!");
+        #if VERBOSE
+            Serial.println("Token missing in login response!");
+        #endif
+
         return false;
     }
 
     setToken(String(token));
-    if (_verbose) Serial.println("Login successful!");
+    #if VERBOSE
+        Serial.println("Login successful!");
+    #endif
     return true;
 }
 
@@ -45,22 +54,26 @@ bool AicuClient::_getJson(const String& path, JsonDocument& doc) {
     http.setTimeout(10000); // 10 seconds
     if (_authHeader.length()) http.addHeader("Authorization", _authHeader);
 
-    if (_verbose) Serial.print("GET "); Serial.println(_baseUrl + path);
+    #if VERBOSE
+        Serial.print("GET "); Serial.println(_baseUrl + path);
+    #endif
 
     int code = http.GET();
     String body = http.getString();
     http.end();
 
-    if (_verbose) {
+    #if VERBOSE
         Serial.print("HTTP Code: "); Serial.println(code);
         Serial.println("Body:"); Serial.println(body);
-    }
+    #endif
 
     if (code < 200 || code >= 300) return false;
 
     DeserializationError err = deserializeJson(doc, body);
     if (err) {
-        if (_verbose) Serial.println("JSON parse failed!");
+        #if VERBOSE
+            Serial.println("JSON parse failed!");
+        #endif
         return false;
     }
     return true;
@@ -79,25 +92,27 @@ bool AicuClient::_postJson(const String& path, JsonDocument& payload, JsonDocume
     http.addHeader("Content-Type", "application/json");
     if (_authHeader.length()) http.addHeader("Authorization", _authHeader);
 
-    if (_verbose) {
+    #if VERBOSE
         Serial.print("POST "); Serial.println(_baseUrl + path);
         Serial.print("Payload: "); Serial.print(payloadStr.length()); Serial.println("B");
-    }
+    #endif
 
     int code = http.POST(payloadStr);
     String body = http.getString();
     http.end();
 
-    if (_verbose) {
+    #if VERBOSE
         Serial.print("HTTP Code: "); Serial.println(code);
         Serial.println("Body:"); Serial.println(body);
-    }
+    #endif
 
     if (code < 200 || code >= 300) return false;
 
     DeserializationError err = deserializeJson(response, body);
     if (err) {
-        if (_verbose) Serial.println("JSON parse failed!");
+        #if VERBOSE
+            Serial.println("JSON parse failed!");
+        #endif
         return false;
     }
 
@@ -118,12 +133,16 @@ bool AicuClient::_del(const String& path) {
     http.begin(*_client, _baseUrl + path);
     if (_authHeader.length()) http.addHeader("Authorization", _authHeader);
 
-    if (_verbose) Serial.print("DELETE "); Serial.println(_baseUrl + path);
+    #if VERBOSE
+        Serial.print("DELETE "); Serial.println(_baseUrl + path);
+    #endif
 
     int code = http.sendRequest("DELETE");
     http.end();
 
-    if (_verbose) Serial.print("HTTP DELETE Code: "); Serial.println(code);
+    #if VERBOSE
+        Serial.print("HTTP DELETE Code: "); Serial.println(code);
+    #endif
 
     return code >= 200 && code < 300;
 }
@@ -150,7 +169,9 @@ bool AicuClient::createFlow(const String& title, const String& description, Json
 // ---- Timeseries ----
 bool AicuClient::sendTimeseriesPoints(const String& flowId, const String& filename, JsonDocument& points) {
     if (!points.is<JsonArray>()) {
-        if (_verbose) Serial.println("Points must be a JSON array!");
+        #if VERBOSE
+            Serial.println("Points must be a JSON array!");
+        #endif
         return false;
     }
 
@@ -173,9 +194,9 @@ bool AicuClient::sendTimeseriesPoints(const String& flowId, const String& filena
     DynamicJsonDocument resp(1024);
     bool ok = _postJson(path, points, resp);
 
-    if (_verbose) {
+    #if VERBOSE
         Serial.println("Timeseries POST response:");
         serializeJsonPretty(resp, Serial);
-    }
+    #endif
     return ok;
 }
