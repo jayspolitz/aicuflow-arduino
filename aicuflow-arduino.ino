@@ -16,6 +16,9 @@
  *        3. Search `add more` to find customisations!
  */
 
+// === Compiler Config ===
+#define USE_BLUETOOTH false // BT-LE is ca 1mb large, thus optional
+
 // === Imports ===
 #include <WiFiClientSecure.h>                    // WPA2/3? alt (insecure): #include <WiFiClient.h>
 #include "imports/TFT_eSPI/TFT_eSPI.cpp"         // LIB NEED TO INSTALL 

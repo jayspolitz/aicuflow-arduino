@@ -8,7 +8,9 @@
 #include "library/apps/about.cpp"             // page: about (message)
 #include "library/apps/random.cpp"            // page: random colors screen test
 #include "library/apps/wifiscan.cpp"          // page: wifi scan
-#include "library/apps/btscan.cpp"            // page: bluethooth scan
+#if USE_BLUETOOTH
+  #include "library/apps/btscan.cpp"            // page: bluethooth scan
+#endif
 #include "library/apps/colortest.cpp"         // page: gradient color test page
 #include "library/apps/colorwheeltest.cpp"    // page: color test page
 #include "library/apps/snakegame.cpp"         // page: snake game
@@ -41,7 +43,9 @@ void setupMenus() {
   connectToolsMenu = new TFTMenu(&tft, en_de("Wireless", "Funk"));
   connectToolsMenu->addBackItem(s_back);
   connectToolsMenu->addItem(en_de("Wifi Scan", "Wlan Suche"), []() { pageManager->openPage("wifiscan"); });
-  connectToolsMenu->addItem(en_de("BT Scan", "BT Suche"), []() { pageManager->openPage("btscan"); });
+  #if USE_BLUETOOTH
+    connectToolsMenu->addItem(en_de("BT Scan", "BT Suche"), []() { pageManager->openPage("btscan"); });
+  #endif
 
   // graphicstest
   graphicsMenu = new TFTMenu(&tft, en_de("Graphics", "Grafiken"));
@@ -129,7 +133,9 @@ void setupPages() {
   pageManager->registerPage("create", onCreateFlowPageOpen, onCreateFlowPageUpdate);
   
   pageManager->registerPage("wifiscan", onWifiPageOpen, onWifiPageUpdate);
-  pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
+  #if USE_BLUETOOTH
+    pageManager->registerPage("btscan", onBTPageOpen, onBTPageUpdate);
+  #endif
 
   pageManager->registerPage("architecture", onHWDiagPageOpen, onHWDiagPageUpdate);
   pageManager->registerPage("colors", onColorTestPageOpen, onColorTestPageUpdate);
