@@ -22,10 +22,11 @@
 #define BYTES_PER_POINT 240  // Reserved memory (increase if more sensors)
 
 // === Imports ===
+#include "library/device/DeviceProps.cpp"        // device detection
+#if IS_ESP
 #include <WiFiClientSecure.h>                    // WPA2/3? alt (insecure): #include <WiFiClient.h>
 #include "imports/TFT_eSPI/TFT_eSPI.cpp"         // LIB NEED TO INSTALL 
 #include "imports/ArduinoJson/ArduinoJson.h"     // LIB NEED TO INSTALL 
-#include "library/device/DeviceProps.cpp"        // device detection
 #include "library/device/Settings.cpp"           // persistent settings
 #include "library/aicuflow/AicuClient.cpp"       // --> client library you can use <--
 #include "library/sensors/SensorMeasurement.cpp" // sensor registry for measuring, plots and saving
@@ -33,6 +34,7 @@
 #include "library/graphics/PageManager.cpp"      // multi-page app on screens
 #include "library/graphics/closeFunctions.cpp"   // for app close timing & recognition
 #include "library/apps/core.cpp"                 // import all apps indirectly
+#endif
 
 // === Setup ===
 // TODO CHANGE THESE FACTORY SETTINGS
@@ -55,25 +57,25 @@ const int WIFI_TIMEOUT = 10000;    // 10s, 0 -> blocking till wifi
 
 // === Globals ===
 // Do not change these, app needs em
+#if IS_ESP
 WiFiClientSecure client;             // secure wifi conn
 AicuClient aicu(API_URL);            // aicu api client
 TFT_eSPI tft = TFT_eSPI();           // screen stuff
 SensorMeasurement sensors("");       // sensor registry (->graphs,measure)
-const DeviceProps* device = nullptr; // auto device info here
 int screenWidth, screenHeight;       // are auto detected
+bool wifiAvailable = false;          // true once wifi connected
+#endif
 int LEFT_BUTTON, RIGHT_BUTTON;       // are auto detected
 int VOLTAGE_PIN;                     // is auto detected
-bool wifiAvailable = false;          // true once wifi connected
+const DeviceProps* device = nullptr; // auto device info here
 
 // === Sensors ===
 // Measurement functions (add more yourself!)
 uint8_t measure_left() { return !digitalRead(LEFT_BUTTON); }
 uint8_t measure_right() { return !digitalRead(RIGHT_BUTTON); }
-float measure_wifi() { return (float) WiFi.RSSI(); }
 float measure_cpu_voltage() {
   return (analogRead(VOLTAGE_PIN)/4095.0)*2.0*3.3*1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
 }
-int measure_freeheap() { return ESP.getFreeHeap(); }
 float measure_loops_per_ms () { // old (cpu freq): return (double)getCpuFrequencyMhz();
   const uint32_t start = micros();
   const uint32_t duration = 10000; // 10 ms in µs
@@ -81,6 +83,9 @@ float measure_loops_per_ms () { // old (cpu freq): return (double)getCpuFrequenc
   while ((micros() - start) < duration) cycles++;
   return (float) cycles / 10; // avg cycles in 1 ms
 }
+#if IS_ESP
+float measure_wifi() { return (float) WiFi.RSSI(); }
+int measure_freeheap() { return ESP.getFreeHeap(); }
 
 // Register sensors for data collection,
 // and sending to the aicuflow cloud.
@@ -119,13 +124,15 @@ void registerSensors() {
   //   Ex2) Not graphed, deactivated sensor
   //      sensors.registerSensor("uptime", []() { return millis() / 1000.0; }, TFT_MAGENTA, false, false);
 }
+#endif
 
 // === Program Sequence ===
 // Only change this if you're sure
 void setup() {
+  device = &getDeviceProps();
+  #if IS_ESP
   trackForAutoReset(); // 3x reboot before start = reset
   
-  device = &getDeviceProps();
   initPoints();
   initDeviceGPIOPins();
   initSerial();
@@ -142,7 +149,10 @@ void setup() {
   
   setupPages(); // for all devices
   clearAutoReset();
+  #endif
 }
 void loop() {
+  #if IS_ESP
   pageManager->update(); // render apps like measurement
+  #endif
 }

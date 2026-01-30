@@ -6,9 +6,9 @@
 
 enum class DeviceFamily : uint8_t {
   Unknown,
-  AVR,
+  AVR_FAMILY,   // AVR may be defined by IDE
   ESP8266,
-  ESP32_FAMILY,
+  ESP32_FAMILY, // ESP32 may be defined by IDE
   ESP32_S2,
   ESP32_S3,
   ESP32_C3
