@@ -155,6 +155,7 @@ Aicuflow-Arduino Sketch (`aicuflow-arduino.ino`)
 - multilingual mode (EN, DE)
 - station mode to configure using webserver
 - qr code render on tft!
+- (experimental) stream ALL pins (analog and digital) to aicuflow
 
 Library (folder `library/*`, see `examples/*`)
 
