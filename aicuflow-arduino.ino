@@ -99,10 +99,11 @@ void registerSensors() {
   sensors.registerSensor("volt", measure_cpu_voltage, TFT_RED, true, true);
   // Temperature = analog sensor
   sensors.registerSensor("temp", temperatureRead, TFT_ORANGE, true, true);
-  #if CONFIG_IDF_TARGET_ESP32
+  
+  //#if CONFIG_IDF_TARGET_ESP32
     // Hall-Sensor (only on classic esp32)
-    sensors.registerSensor("hall", hallRead, TFT_MAGENTA, true, true);
-  #endif
+    // sensors.registerSensor("hall", hallRead, TFT_MAGENTA, true, true);
+  //#endif
 
   // Operational speed (~cpu frequency) = discrete number "sensor" (not graphed)
   sensors.registerSensor("speed", measure_loops_per_ms, TFT_YELLOW, true, false);  

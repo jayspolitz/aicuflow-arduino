@@ -165,6 +165,8 @@ void handleClient() {
             deviceName = decodedName;
         }
 
+        // by now we dont want to show tut anymore
+        hasDoneTutorial = true;
         saveSettings();
         applySettings();
 
@@ -260,34 +262,34 @@ void onSettingsWebPageOpen() {
         #endif
         started = true;
     }
-    drawSettingsScreen();
+    if (device->has_display) drawSettingsScreen();
 }
 
 void onSettingsWebPageUpdate() {
     if(server) handleClient();
-    
-    static unsigned long lastPress = 0;
-    static bool leftWasLow = false;
-    static bool rightWasLow = false;
-    
-    unsigned long now = millis();
-    bool leftIsLow = digitalRead(LEFT_BUTTON) == LOW;
-    bool rightIsLow = digitalRead(RIGHT_BUTTON) == LOW;
+    if (device->has_display) { // display: allow inversion & exit
+        static unsigned long lastPress = 0;
+        static bool leftWasLow = false;
+        static bool rightWasLow = false;
+        
+        unsigned long now = millis();
+        bool leftIsLow = digitalRead(LEFT_BUTTON) == LOW;
+        bool rightIsLow = digitalRead(RIGHT_BUTTON) == LOW;
 
-    if (now - lastPress > 200) {
-        // Trigger on button press (transition to LOW)
-        if (leftIsLow && !leftWasLow) {
-            settingsInverted = !settingsInverted;
-            drawSettingsScreen();
-            lastPress = now;
-        }
+        if (now - lastPress > 200) {
+            // Trigger on button press (transition to LOW)
+            if (leftIsLow && !leftWasLow) {
+                settingsInverted = !settingsInverted;
+                drawSettingsScreen();
+                lastPress = now;
+            }
 
-        if (rightIsLow && !rightWasLow) {
-            closePage();
-            lastPress = now;
+            if (rightIsLow && !rightWasLow) {
+                closePage();
+                lastPress = now;
+            }
         }
+        leftWasLow = leftIsLow;
+        rightWasLow = rightIsLow;
     }
-    
-    leftWasLow = leftIsLow;
-    rightWasLow = rightIsLow;
 }

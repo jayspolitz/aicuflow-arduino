@@ -164,7 +164,16 @@ void setupPages() {
   );
   pageManager->begin();
 
-  if (device->has_display && !hasDoneTutorial) pageManager->openPage("tutorial");
+  if (!hasDoneTutorial) {
+    if (device->has_display) pageManager->openPage("tutorial"); // screen -> tutorial
+    else { // no screen -> websetup and auto start
+      Serial.println("Device is not yet configured.");
+      Serial.println("Please connect to WiFi 'aicuflow'.");
+      Serial.println("Then, open http://192.168.4.1/");
+      Serial.println("After configuration, measurement will auto-start.");
+      pageManager->openPage("webset");
+    }
+  }
 }
 void onMenuPageOpen() {
   tft.fillScreen(TFT_BLACK);
