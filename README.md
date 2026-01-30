@@ -177,6 +177,16 @@ Optional Future:
 
 - configuration from [aicuflow platform](https://aicuflow.com/flows)
 
+### D3) Release History
+
+Using [semver](https://semver.org/lang/de/):
+
+```
+v0.1.2 - Screenless device setup will be easier
+v0.1.1 - Easy Setup, QRCodes and 2 new mini-apps (Serial, Voltmeter)
+v0.1.0 - Initial release of all features: Lib, Core, Apps, Pretty TFT UI
+```
+
 ## E) Contribution Guide
 
 **Please star this repo, so more people can see it :)**
