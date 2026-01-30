@@ -7,13 +7,21 @@
 [![](https://aicuflow.com/api/badge?label=&message=machine%20learning&color=036b64)](https://aicuflow.com)
 [![](https://aicuflow.com/api/badge?label=&message=arduino%20compatible&color=036b64)](https://aicuflow.com)
 
+> **README Overview**\
+> A) [Screenshots](#a-cool-demo-screenshots)\
+> B) [Device Useage](#b-using-a-sensor-device)\
+> C) [Development](#c-developer-quickstart)\
+> D) [Features](#d-features-and-roadmap)\
+> E) [Contributing](#e-contribution-guide)
+
 Machine learning and Arduino? [Aicuflow](https://aicuflow.com) by AICU GmbH makes it possible! Actually, more than that: pretty menus, inputs, plots and sensor streaming to the cloud - with some free data storage.
 
 **Please star this repo, so more people can see it :)**
 
 This code automatically detects your device properties (wifi, tft display, sensors) and adjusts to it - you don't need to set anything up after loading this repository. No need to install external libraries or dependencies, they are packaged under the `imports` folder.
 
-If you just want to get the `AicuClient.cpp` code, it is under `library/aicuflow`. But there is more cool features worthwile exploring in this codebase (check images below)!
+> 💡 Library: If you just want to get the `AicuClient.cpp` code, it is under `library/aicuflow`.\
+>  But there is more cool features worthwile exploring in this codebase (check images below)!
 
 ![](https://aicuflow.com/docs/library/arduino/esp32title.png)
 
@@ -25,13 +33,42 @@ For more details and examples, refer to our [documentation](https://aicuflow.com
 [![](https://aicuflow.com/api/badge?label=&message=free%20registration&color=036b64)](https://aicuflow.com/signup)
 [![](https://aicuflow.com/api/badge?label=&message=quick%20setup&color=036b64)](https://aicuflow.com/docs/library/arduino)
 
-## Cool demo screenshots
+## A) Cool demo screenshots
 
 <div align="center"> <img src="https://aicuflow.com/docs/library/arduino/esp32sensors.webp" width="50%" /> </div>
 
 ![Cool demo screenshots](https://aicuflow.com/docs/library/arduino/esp32coolscreens.webp)
 
-## Quickstart
+## B) Using a sensor device
+
+If you have found yourself with a ready Aicuflow sensor device (like from [our shop](https://aicuflow.com/shop/products)), you can go right ahead and use it!
+
+### (1/2) Starting (you have a display)
+
+**Boot it** up by connecting it via USB to any powersource!
+
+1. Click through the **tutorial** using the left and right buttons.
+2. Click and release both **buttons** at the same time to click `Measure`
+3. If your device needs configuration, this brings up the `Easy Configuration` page
+
+### (1/2) Starting (you have no display)
+
+If your device needs configuration, a hotspot `aicuflow` is automatically started.\
+Once it is configured, it **automatically** measures and streams into your aicu-flow.
+
+### (2/2) Setup (all devices)
+
+1. **Connect** to the open wifi `aicuflow` and visit the site http://192.168.4.1
+2. **Enter** your [aicuflow credentials](https://aicuflow.com/flows) including a flow id and your wifi credentials
+3. **Enjoy:** You can start the sensor data measurement (automatically if no screen), yayy!
+
+### Reset any device
+
+If you notice your device is not configured right, or need to reconfigure,\
+just press the reset button three times in about half a second intervals.\
+This resets the configuration and lets you restart!
+
+## C) Developer Quickstart
 
 Download the repository source first:
 
@@ -74,7 +111,7 @@ const int SCREEN_IDLE_MS = 60000; // also needs TFT_BL eg 38
 const int WIFI_TIMEOUT = 10000; // 10s, 0 -> blocking till wifi
 ```
 
-## Supported Boards and Fixes
+### Supported Boards and Fixes
 
 We tested this on a hand full of arduino-compatible devices. To be on the safe side, we recommend you use one of these boards. Others may still work, but are not present in our [hardware lab](https://aicuflow.com/docs/library/arduino#the-aicuflow-lab).
 
@@ -93,11 +130,11 @@ Known issues and Fixes:
 
 - **Sketch too large** - this can happen if your boards partition scheme (in menu `Tool>Partition Scheme`) is defined wrongly (for example on the ttgo-t1). You can resolve it easily by switching to `Huge App` or another larger scheme that has less file system reservations.
 
-## Features and Roadmap
+## D) Features and Roadmap
 
 This [arduino client](https://aicuflow.com/docs/library/arduino) library for [aicuflow](https://aicuflow.com/) works out of the box or can be included as a library in custom projects. We're expanding support for more devices and use-cases.
 
-### Already working features
+### D1) Already working features
 
 Aicuflow-Arduino Sketch (`aicuflow-arduino.ino`)
 
@@ -108,6 +145,8 @@ Aicuflow-Arduino Sketch (`aicuflow-arduino.ino`)
 - apps: scan wifi & bt
 - games: snake, game of life, mandelbrot
 - multilingual mode (EN, DE)
+- station mode to configure using webserver
+- qr code render on tft!
 
 Library (folder `library/*`, see `examples/*`)
 
@@ -118,7 +157,7 @@ Library (folder `library/*`, see `examples/*`)
 - auto tft_espi screen selection (needs more boards)
 - freezed libraries ArduinoJson and TFT_eSPI
 
-### Planned features
+### D2) Planned features
 
 Useful Feats:
 
@@ -131,16 +170,14 @@ Cool Stuff:
 
 - multi-wifi setup
 - automatic sensor plug and play (would be cool)
-- station mode to config using webserver
 - wifi monitoring as time series sensor
 - bluetooth phone integration
-- qr code render on tft?
 
 Optional Future:
 
 - configuration from [aicuflow platform](https://aicuflow.com/flows)
 
-## Contribution Guide
+## E) Contribution Guide
 
 **Please star this repo, so more people can see it :)**
 
