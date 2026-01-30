@@ -23,13 +23,10 @@ SensorMeasurement::~SensorMeasurement() {
 
 void SensorMeasurement::registerSensor(const char* key,
                                       std::function<double()> readFunc,
-                                      double min, double max, uint16_t color,
-                                      bool enabled, bool showGraph) {
+                                      uint16_t color, bool enabled, bool showGraph) {
     SensorDef def = {
         .key = key,
         .read = readFunc,
-        .min = min,
-        .max = max,
         .color = color,
         .enabled = enabled,
         .showGraph = showGraph
@@ -110,9 +107,7 @@ void SensorMeasurement::initGraphs(TFT_eSPI* tft, int screenWidth, int screenHei
         
         yOffset -= fullHeight;
         ScrollingGraph* graph = new ScrollingGraph(tft);
-        graph->begin(0, yOffset, screenWidth, graphBarHeight,
-                    sensors[i].min, sensors[i].max,
-                    sensors[i].color);
+        graph->begin(0, yOffset, screenWidth, graphBarHeight, sensors[i].color);
         graphs.insert(graphs.begin(), graph);
     }
 }

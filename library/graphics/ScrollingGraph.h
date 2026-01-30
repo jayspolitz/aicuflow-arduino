@@ -16,6 +16,6 @@ private:
   
 public:
   ScrollingGraph(TFT_eSPI* tft);
-  void begin(int x, int y, int w, int h, float minVal, float maxVal, uint16_t color);
+  void begin(int x, int y, int w, int h, uint16_t color);
   void update(float val);
 };

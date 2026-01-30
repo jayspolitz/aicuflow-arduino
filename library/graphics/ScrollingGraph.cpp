@@ -3,11 +3,8 @@
 
 ScrollingGraph::ScrollingGraph(TFT_eSPI* tft) : spr(tft), _count(0) {}
 
-void ScrollingGraph::begin(int x, int y, int w, int h,
-            float /*minVal*/, float /*maxVal*/,
-            uint16_t color) {
-  _x = x; _y = y; _w = w; _h = h;
-  _color = color;
+void ScrollingGraph::begin(int x, int y, int w, int h, uint16_t color) {
+  _x = x; _y = y; _w = w; _h = h; _color = color;
 
   spr.createSprite(w, h);
   spr.fillSprite(TFT_BLACK);

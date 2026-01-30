@@ -48,8 +48,7 @@ public:
     // Core sensor registration - use this for everything!
     void registerSensor(const char* key, 
                        std::function<double()> readFunc,
-                       double min, double max, uint16_t color,
-                       bool enabled = true, bool showGraph = true);
+                       uint16_t color, bool enabled = true, bool showGraph = true);
 
     // Control
     void enableSensor(const char* key, bool enabled = true);

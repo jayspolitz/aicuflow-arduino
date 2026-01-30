@@ -65,60 +65,53 @@ int LEFT_BUTTON, RIGHT_BUTTON;       // are auto detected
 bool wifiAvailable = false;          // true once wifi connected
 
 // === Sensors ===
+// Measurement functions (add more yourself!)
+uint8_t measure_left() { return !digitalRead(LEFT_BUTTON); }
+uint8_t measure_right() { return !digitalRead(RIGHT_BUTTON); }
+float measure_wifi() { return (float) WiFi.RSSI(); }
+float measure_cpu_voltage() {
+  return (analogRead(34)/4095.0)*2.0*3.3*1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
+}
+int measure_freeheap() { return ESP.getFreeHeap(); }
+float measure_loops_per_ms () { // old (cpu freq): return (double)getCpuFrequencyMhz();
+  const uint32_t start = micros();
+  const uint32_t duration = 10000; // 10 ms in µs
+  uint32_t cycles = 0;
+  while ((micros() - start) < duration) cycles++;
+  return (float) cycles / 10; // avg cycles in 1 ms
+}
+
 // Register sensors for data collection,
 // and sending to the aicuflow cloud.
 // the json keys are short on purpose to reduce load.
 void registerSensors() {
-  
   // Left button = binary sensor
-  sensors.registerSensor("left",
-    [&]() { return !digitalRead(LEFT_BUTTON); },
-    0, 1, TFT_PURPLE, LOG_SEND, SHOW_GRAPH);
-  
+  sensors.registerSensor("left", measure_left, TFT_PURPLE, true, true);
   // Right button = binary sensor
-  sensors.registerSensor("right",
-    [&]() { return !digitalRead(RIGHT_BUTTON); },
-    0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("right", measure_right, TFT_BLUE, true, true);
   
   // (if wifi) signal strength = analog sensor
   if (device->has_wifi && wifiAvailable)
-    sensors.registerSensor("rssi",
-      []() { return WiFi.RSSI(); },
-      -100, -30, TFT_GREEN, LOG_SEND, SHOW_GRAPH
-    );
+    sensors.registerSensor("rssi", measure_wifi, TFT_GREEN, true, true);
   
   // Voltage = analog sensor
-  sensors.registerSensor("volt", // 2=ResDiv;3.3RefV;4095-12-bitADCres
-    []() { return (analogRead(34)/4095.0)*2.0*3.3*1.1;  },
-    2.0, 6.0, TFT_RED, LOG_SEND, SHOW_GRAPH);
-
+  sensors.registerSensor("volt", measure_cpu_voltage, TFT_RED, true, true);
   // Temperature = analog sensor
-  sensors.registerSensor("temp", temperatureRead,
-    20, 60, TFT_ORANGE, LOG_SEND, SHOW_GRAPH);
-  
-  // Free Memory = discrete number "sensor"
-  sensors.registerSensor("mem",
-    []() { return ESP.getFreeHeap() / 1024.0; },
-    100, 300, TFT_CYAN, LOG_SEND, SHOW_GRAPH);
+  sensors.registerSensor("temp", temperatureRead, TFT_ORANGE, true, true);
 
   // Operational speed (~cpu frequency) = discrete number "sensor" (not graphed)
-  sensors.registerSensor("f",
-    []() { // old (cpu freq): return (double)getCpuFrequencyMhz();
-      const uint32_t start = micros();
-      const uint32_t duration = 10000; // 10 ms in µs
-      uint32_t cycles = 0;
-      while ((micros() - start) < duration) cycles++;
-      return (float) cycles / 10; // avg cycles in 1 ms
-    }, 0, 5000000, TFT_YELLOW, LOG_SEND, HIDE_GRAPH);
+  sensors.registerSensor("speed", measure_loops_per_ms, TFT_YELLOW, true, false);  
+  // Free Memory = discrete number "sensor"
+  sensors.registerSensor("free", measure_freeheap, TFT_CYAN, true, true);
 
   // Want to add more sensors?
-  //   Parameters: (key, readFunc, min, max, color, enabled, showGraph)
+  //   Parameters: (key, readFunc, color, enabled, showGraph)
   
   //   Ex1) Custom analog sensor
-  //      sensors.registerSensor("light", []() { return analogRead(35) / 4095.0 * 100; }, 0, 100, TFT_WHITE, LOG_SEND, SHOW_GRAPH);
+  //      sensors.registerSensor("light", []() { return analogRead(35) / 4095.0 * 100; }, TFT_WHITE, true, true);
   
   //   Ex2) Not graphed, deactivated sensor
-  //      sensors.registerSensor("uptime", []() { return millis() / 1000.0; }, 0, 86400, TFT_MAGENTA, LOG_NONE, HIDE_GRAPH);
+  //      sensors.registerSensor("uptime", []() { return millis() / 1000.0; }, TFT_MAGENTA, false, false);
 }
 
 // === Program Sequence ===
