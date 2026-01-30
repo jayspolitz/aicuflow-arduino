@@ -8,10 +8,6 @@
 
 #include "SensorMeasurement.h"
 
-#if IS_ESP
-    #include "../display/ScrollingGraph.h"
-#endif
-
 SensorMeasurement::SensorMeasurement(const char* deviceId) 
     : deviceId(deviceId), timestamp(0) {
 #if IS_AVR
@@ -100,7 +96,7 @@ void SensorMeasurement::measure() {
     for (int i = 0; i < sensorCount; i++) {
 #endif
         if (sensors[i].enabled && sensors[i].read) {
-            values[i] = sensors[i].read();
+            values[i] = (float) sensors[i].read();
         }
     }
 }
@@ -120,7 +116,7 @@ void SensorMeasurement::toJson(JsonObject& obj) const {
     for (int i = 0; i < sensorCount; i++) {
 #endif
         if (sensors[i].enabled) {
-            obj[sensors[i].key] = serialized(String(values[i], 2));
+            obj[sensors[i].key] = values[i];
         }
     }
 }

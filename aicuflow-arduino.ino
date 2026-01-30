@@ -20,6 +20,7 @@
 #define USE_BLUETOOTH false  // BT-LE is ca 1mb large, thus optional
 #define VERBOSE false        // Debugging recommended for developers
 #define BYTES_PER_POINT 240  // Reserved memory (increase if more sensors)
+#define ALL_PINS false       // (experimental) Register all pins as inputs
 
 // === Imports ===
 #include "library/device/DeviceProps.cpp"        // device detection
@@ -35,6 +36,7 @@
 #include "library/apps/core.cpp"                 // import all apps indirectly
 #endif
 #include "library/sensors/SensorMeasurement.cpp" // sensor registry for measuring, plots and saving
+#include "library/device/all_other_pins.cpp"     // (experimental) for the ALL_PINS feature
 
 // === Setup ===
 // TODO CHANGE THESE FACTORY SETTINGS
@@ -111,6 +113,9 @@ void registerSensors() {
     // Hall-Sensor (only on classic esp32)
     // sensors.registerSensor("hall", hallRead, TFT_MAGENTA, true, true);
   //#endif
+  #if ALL_PINS // (experimental) sense all analog and digital pins
+    registerAllOtherPins();
+  #endif
 
   // Operational speed (~cpu frequency) = discrete number "sensor" (not graphed)
   sensors.registerSensor("speed", measure_loops_per_ms, TFT_YELLOW, true, false);  

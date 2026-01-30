@@ -113,7 +113,7 @@ private:
     int graphBarGap = 3;
 #else
     // Static arrays for AVR
-    static const int MAX_SENSORS = 16;
+    static const int MAX_SENSORS = 32;
     SensorDef sensors[MAX_SENSORS];
     double values[MAX_SENSORS];
     int sensorCount;
