@@ -62,6 +62,8 @@ Once it is configured, it **automatically** measures and streams into your aicu-
 2. **Enter** your [aicuflow credentials](https://aicuflow.com/flows) including a flow id and your wifi credentials
 3. **Enjoy:** You can start the sensor data measurement (automatically if no screen), yayy!
 
+(Note: if you're on a non-wifi arduino like the uno, it just streams your sensors to the serial port without any setup)
+
 ### Reset any device
 
 If you notice your device is not configured right, or need to reconfigure,\
