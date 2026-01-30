@@ -105,7 +105,13 @@ void setupMenus() {
 
   // main
   mainMenu = new TFTMenu(&tft, en_de("Aicuflow IoT+AI", "Aicuflow IoT+KI"));
-  mainMenu->addItem(en_de("Measure", "Messung"), []() { pageManager->openPage("measure"); });
+  mainMenu->addItem(en_de("Measure", "Messung"), []() {
+    if (wlanSSID == "" || aicuMail == "" || aicuPass == "") { // not configured
+      pageManager->openPage("webset");
+    } else { // configured
+      pageManager->openPage("measure");
+    }
+  });
   mainMenu->addSubmenu(en_de("Tools", "Tools"), toolsMenu);
   mainMenu->addSubmenu(en_de("Setup", "Setup"), settingsMenu);
   mainMenu->addItem(en_de("About", "Infos"), []() { pageManager->openPage("about"); });

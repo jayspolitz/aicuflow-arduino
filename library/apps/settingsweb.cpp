@@ -91,10 +91,13 @@ void drawSettingsScreen() {
 String urlDecode(String str) {
     String decoded = "";
     for (unsigned int i = 0; i < str.length(); i++) {
-        if (str[i] == '+') decoded += ' ';
-        else if (str[i] == '%' && i + 2 < str.length()) {
-            char hex[3] = {str[++i], str[++i], '\0'};
-            decoded += (char)strtol(hex, NULL, 16);
+        if (str[i] == '+') {
+            decoded += ' ';
+        } else if (str[i] == '%' && i + 2 < str.length()) {
+            char hex[3] = {str[i+1], str[i+2], '\0'};
+            unsigned char decodedChar = (unsigned char)strtol(hex, NULL, 16);
+            decoded += (char)decodedChar;
+            i += 2;
         } else {
             decoded += str[i];
         }
@@ -154,7 +157,12 @@ void handleClient() {
             streamFileName = urlDecode(body.substring(idx + 15, end > 0 ? end : body.length()));
         }
         if ((idx = body.indexOf("deviceName=")) >= 0) {
-            deviceName = urlDecode(body.substring(idx + 11, body.length()));
+            String decodedName = urlDecode(body.substring(idx + 11, body.length()));
+            // Limit device name to 12 characters
+            if (decodedName.length() > 12) {
+                decodedName = decodedName.substring(0, 12);
+            }
+            deviceName = decodedName;
         }
 
         saveSettings();
@@ -165,8 +173,8 @@ void handleClient() {
         #endif
 
         // Send success page
-        String html = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-        html += "<html><head><meta name='viewport' content='width=device-width'><style>";
+        String html = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+        html += "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width'><style>";
         html += "body{font-family:Arial;margin:0;padding:0;background:#222;color:#eee;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}";
         html += ".container{padding:40px;}";
         html += "h1{color:#0066cc;font-size:48px;margin:0 0 20px 0;}";
@@ -174,8 +182,9 @@ void handleClient() {
         html += "</style></head><body>";
         html += "<div class='container'>";
         html += "<h1>Settings Saved!</h1>";
-        html += "<p>Your configuration has been updated.</p>";
-        html += "<p>You can now start using Aicuflow.</p>";
+        html += "<p>Device configuration has been updated.</p>";
+        html += "<p>Setup Hotspot will be closed.</p>";
+        html += "<p>You can now start measuring.</p>";
         html += "<p style='margin-top:30px;color:#888;font-size:14px;'>This page will close automatically.</p>";
         html += "</div>";
         html += "<script>setTimeout(function(){window.close();},3000);</script>";
@@ -188,24 +197,51 @@ void handleClient() {
         toStartPage();
         
     } else {
-        String html = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-        html += "<html><head><meta name='viewport' content='width=device-width'><style>";
+        String html = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+        html += "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width'><style>";
         html += "body{font-family:Arial;margin:20px;background:#222;color:#eee;}";
-        html += "input{width:100%;padding:8px;margin:5px 0;box-sizing:border-box;}";
+        html += "input,select{width:100%;padding:8px;margin:5px 0;box-sizing:border-box;background:#333;color:#eee;border:1px solid #555;}";
         html += "button{width:100%;padding:12px;margin-top:10px;background:#0066cc;color:#fff;border:none;cursor:pointer;}";
+        html += "button:hover{background:#0052a3;}";
+        html += "label{display:block;margin-top:10px;font-weight:bold;}";
+        html += ".optional{color:#888;font-size:12px;font-weight:normal;}";
+        html += "hr{border:none;border-top:1px solid #444;margin:20px 0;}";
+        html += ".char-count{font-size:11px;color:#888;margin-top:2px;}";
         html += "</style></head><body>";
-        html += "<h2>Aicuflow Settings</h2>";
-        html += "<form method='post' action='/save'>";
-        html += "SSID:<br><input name='wlanSSID' value='" + wlanSSID + "'><br>";
-        html += "Pass:<br><input name='wlanPass' type='password' value='" + wlanPass + "'><br>";
-        html += "Email:<br><input name='aicuMail' value='" + aicuMail + "'><br>";
-        html += "Email Pass:<br><input name='aicuPass' type='password' value='" + aicuPass + "'><br>";
-        html += "Flow:<br><input name='aicuFlow' value='" + aicuFlow + "'><br>";
-        html += "Locale:<br><input name='locale' value='" + locale + "'><br>";
-        html += "Stream File:<br><input name='streamFileName' value='" + streamFileName + "'><br>";
-        html += "Device:<br><input name='deviceName' value='" + deviceName + "'><br>";
+        html += "<h2>Aicuflow IoT Device Setup</h2>";
+        html += "<form method='post' action='/save' accept-charset='UTF-8'>";
+        html += "<label>WiFi Name:</label>";
+        html += "<input name='wlanSSID' value='" + wlanSSID + "' required><br>";
+        html += "<label>WiFi Password:</label>";
+        html += "<input name='wlanPass' type='password' value='" + wlanPass + "' required><br>";
+        html += "<hr>";
+        html += "<label>Email:</label>";
+        html += "<input name='aicuMail' type='email' value='" + aicuMail + "'><br>";
+        html += "<label>Password:</label>";
+        html += "<input name='aicuPass' type='password' value='" + aicuPass + "'><br>";
+        html += "<label>Flow ID:</label>";
+        html += "<input name='aicuFlow' value='" + aicuFlow + "'><br>";
+        html += "<hr>";
+        html += "<label>Device language: <span class='optional'>(optional)</span></label>";
+        html += "<select name='locale'>";
+        html += "<option value='en'" + String(locale == "en" ? " selected" : "") + ">English</option>";
+        html += "<option value='de'" + String(locale == "de" ? " selected" : "") + ">Deutsch</option>";
+        html += "</select><br>";
+        html += "<label>Filename written to: <span class='optional'>(optional)</span></label>";
+        html += "<input name='streamFileName' value='" + streamFileName + "'><br>";
+        html += "<label>Device Name: <span class='optional'>(max 12 chars)</span></label>";
+        html += "<input name='deviceName' id='deviceName' value='" + deviceName + "' maxlength='12'>";
+        html += "<div class='char-count' id='charCount'>0/12</div>";
         html += "<button type='submit'>SAVE</button>";
-        html += "</form></body></html>";
+        html += "</form>";
+        html += "<script>";
+        html += "const input=document.getElementById('deviceName');";
+        html += "const counter=document.getElementById('charCount');";
+        html += "function updateCount(){counter.textContent=input.value.length+'/12';}";
+        html += "input.addEventListener('input',updateCount);";
+        html += "updateCount();";
+        html += "</script>";
+        html += "</body></html>";
         
         client.print(html);
         client.stop();
