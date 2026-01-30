@@ -2,7 +2,7 @@
 
 int lastVoltmeterReadTime = 0;
 int voltmeterReadInterval = 100; // read every 100ms
-const int VOLTAGE_PIN = 1; // GPIO1 (ADC1_CH0) on ESP32-S3
+const int VOLT_PIN_EXTRA = 1; // GPIO1 (ADC1_CH0) on ESP32-S3
 const int NUM_SAMPLES = 20; // Average multiple readings for stability
 float voltage = 0.0;
 float current = 0.0;
@@ -60,10 +60,10 @@ void onVoltmeterPageOpen() {
   tft.setTextSize(1);
   
   // Configure ADC for ESP32-S3
-  pinMode(VOLTAGE_PIN, INPUT);
+  pinMode(VOLT_PIN_EXTRA, INPUT);
   analogReadResolution(12); // 12-bit resolution
   analogSetAttenuation(ADC_11db); // 0-3.3V range
-  analogSetPinAttenuation(VOLTAGE_PIN, ADC_11db);
+  analogSetPinAttenuation(VOLT_PIN_EXTRA, ADC_11db);
   
   // Reset min/max
   minVoltage = 999.9;
@@ -79,7 +79,7 @@ float readVoltageWithAveraging() {
   int validSamples = 0;
   
   for (int i = 0; i < NUM_SAMPLES; i++) {
-    int reading = analogRead(VOLTAGE_PIN);
+    int reading = analogRead(VOLT_PIN_EXTRA);
     if (reading >= 0 && reading <= ADC_RESOLUTION) {
       sum += reading;
       validSamples++;
@@ -169,7 +169,7 @@ void displayVoltageMode() {
   // Raw ADC value
   tft.setTextSize(1);
   tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
-  int rawValue = analogRead(VOLTAGE_PIN);
+  int rawValue = analogRead(VOLT_PIN_EXTRA);
   tft.setCursor(10, 65);
   tft.printf(en_de("Raw: %d/4095", "Roh: %d/4095"), rawValue);
   

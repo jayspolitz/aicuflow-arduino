@@ -60,12 +60,16 @@ void initDeviceGPIOPins() {
     // buttons
     LEFT_BUTTON = 0;
     RIGHT_BUTTON = 35;
+    VOLTAGE_PIN = 34;
     pinMode(LEFT_BUTTON, INPUT_PULLUP);
     pinMode(RIGHT_BUTTON, INPUT);
   } else if (device->kind_slug == "lilygo-t-display-s3") {
+    // voltage divider for measurement of U ? -> don't think
+
     // buttons
     LEFT_BUTTON = 0;
     RIGHT_BUTTON = 14;
+    VOLTAGE_PIN = 4; // GPIO 4 for battery voltage; might need display on
     pinMode(LEFT_BUTTON, INPUT_PULLUP);
     pinMode(RIGHT_BUTTON, INPUT);
 

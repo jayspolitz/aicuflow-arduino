@@ -62,6 +62,7 @@ SensorMeasurement sensors("");       // sensor registry (->graphs,measure)
 const DeviceProps* device = nullptr; // auto device info here
 int screenWidth, screenHeight;       // are auto detected
 int LEFT_BUTTON, RIGHT_BUTTON;       // are auto detected
+int VOLTAGE_PIN;                     // is auto detected
 bool wifiAvailable = false;          // true once wifi connected
 
 // === Sensors ===
@@ -70,7 +71,7 @@ uint8_t measure_left() { return !digitalRead(LEFT_BUTTON); }
 uint8_t measure_right() { return !digitalRead(RIGHT_BUTTON); }
 float measure_wifi() { return (float) WiFi.RSSI(); }
 float measure_cpu_voltage() {
-  return (analogRead(34)/4095.0)*2.0*3.3*1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
+  return (analogRead(VOLTAGE_PIN)/4095.0)*2.0*3.3*1.1; // 2=ResDiv;3.3RefV;4095-12-bitADCres
 }
 int measure_freeheap() { return ESP.getFreeHeap(); }
 float measure_loops_per_ms () { // old (cpu freq): return (double)getCpuFrequencyMhz();

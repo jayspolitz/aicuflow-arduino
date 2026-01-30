@@ -16,6 +16,7 @@ extern int screenHeight;
 extern bool wifiAvailable;
 extern int LEFT_BUTTON;
 extern int RIGHT_BUTTON;
+extern int VOLTAGE_PIN;
 
 // function headers
 void bootScreen(int duration);
