@@ -1,5 +1,29 @@
 #include "boot.h"
 
+Preferences bprefs;
+
+void trackForAutoReset() {
+  bprefs.begin("bootTrack", false);
+  int counter = bprefs.getInt("counter", 0);
+  counter++;  
+  bprefs.putInt("counter", counter);
+  bprefs.end();
+  if (counter >= 3) { // tripple reboot detected
+    bprefs.begin("bootTrack", false);
+    bprefs.putInt("counter", 0);
+    bprefs.end();
+    // react by resetting settings to factory
+    clearSettings();
+    esp_restart();
+  }
+}
+
+void clearAutoReset() {
+  bprefs.begin("bootTrack", false);
+  bprefs.putInt("counter", 0);
+  bprefs.end();
+}
+
 // tft display screens
 void bootScreen(int duration=1000) {
   tft.setRotation(0); // vertical
@@ -29,7 +53,7 @@ void plotScreen(int duration=1000) {
 void initSerial() {
   Serial.begin(115200); // Serial.begin(0); would try to detect
   // if (Serial.baudRate() == 0) // no rate detected
-  while (!Serial && millis() < 500) delay(10);
+  while (!Serial && millis() < 200) delay(10);
   #if VERBOSE
     Serial.println("Hello World!");
     delay(500);

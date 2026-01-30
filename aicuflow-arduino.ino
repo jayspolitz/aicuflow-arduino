@@ -123,6 +123,8 @@ void registerSensors() {
 // === Program Sequence ===
 // Only change this if you're sure
 void setup() {
+  trackForAutoReset(); // 3x reboot before start = reset
+  
   device = &getDeviceProps();
   initPoints();
   initDeviceGPIOPins();
@@ -130,12 +132,16 @@ void setup() {
   loadSettings();
   applySettings();
   
-  if (!device->has_display) delay(1000);
-  if (device->has_display)  initTFTScreen();
-  if (device->has_display)  bootScreen(1000);
-  if (device->has_display)  setupMenus();
+  if (device->has_display){
+    initTFTScreen();
+    bootScreen(1000);
+    setupMenus();
+  } else {
+    delay(1100);
+  }
   
-  setupPages();
+  setupPages(); // for all devices
+  clearAutoReset();
 }
 void loop() {
   pageManager->update(); // render apps like measurement

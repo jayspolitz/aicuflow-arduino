@@ -6,6 +6,7 @@
 #include "library/device/DeviceProps.h"
 #include "library/device/Settings.h"
 #include "library/sensors/SensorMeasurement.h"
+#include <Preferences.h>
 
 // use the global ones
 extern TFT_eSPI tft;
