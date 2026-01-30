@@ -68,6 +68,14 @@ If you notice your device is not configured right, or need to reconfigure,\
 just press the reset button three times in about half a second intervals.\
 This resets the configuration and lets you restart!
 
+### (Optional) updates or new installation
+
+We currently estimate that most devices in circulation contain our latest firmware.
+
+In case you want to update the firmware to match our [latest release](https://github.com/AICU-HEALTH/aicuflow-arduino/releases),\
+you can download the correct `.bin` file from releases (check device name),\
+and upload ("flash") it using a tool like [ESPWebTool](https://esptool.spacehuhn.com/) (browser) or [esptool](https://github.com/espressif/esptool).
+
 ## C) Developer Quickstart
 
 Download the repository source first:
