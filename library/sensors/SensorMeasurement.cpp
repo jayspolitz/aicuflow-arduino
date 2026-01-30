@@ -76,12 +76,11 @@ double SensorMeasurement::getValue(const char* key) const {
 }
 
 void SensorMeasurement::toJson(JsonObject& obj) const {
-    obj["millis"] = timestamp;
-    obj["device"] = deviceId;
-    
+    obj["id"] = deviceId;
+    obj["ms"] = timestamp;
     for (size_t i = 0; i < sensors.size(); i++) {
         if (sensors[i].enabled) {
-            obj[sensors[i].key] = values[i];
+            obj[sensors[i].key] = serialized(String(values[i], 2));
         }
     }
 }

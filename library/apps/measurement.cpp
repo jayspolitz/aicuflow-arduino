@@ -42,7 +42,9 @@ void connectWifiOrTimeout() {
     tft.println(WiFi.localIP());
     tft.setTextColor(TFT_WHITE);
   } else if (device->has_display) tft.print("\n");
-  Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
+  #if VERBOSE
+    Serial.print("Wifi-Mac: "); Serial.println(WiFi.macAddress());
+  #endif
   delay(500);
 }
 
@@ -53,7 +55,9 @@ void connectAPI() {
       tft.println(en_de("Login failed! :/", "Anmeldefehler! :/"));
       tft.setTextColor(TFT_WHITE);
     }
-    Serial.println("Login failed!");
+    #if VERBOSE
+      Serial.println("Login failed!");
+    #endif
     return;
   } else {
     if (device->has_display){
@@ -61,12 +65,14 @@ void connectAPI() {
       tft.println(en_de("Aicuflow connected!", "Aicuflow verbunden!"));
       tft.setTextColor(TFT_WHITE);
     }
-    Serial.println("Login success!");
+    #if VERBOSE
+      Serial.println("Login success!");
+    #endif
   }
 }
 
 // measurement: json collect & stream, dtype
-static DynamicJsonDocument points(384*POINTS_BATCH_SIZE*2);
+static DynamicJsonDocument points(POINTS_BATCH_SIZE * BYTES_PER_POINT);
 static JsonArray arr;
 static uint16_t count = 0;
 static int32_t PERIOD_US = MEASURE_DELAY_MS * 1000UL;
@@ -80,7 +86,7 @@ QueueHandle_t flushQueue; // Async queue for sending
 void flushSamplesAsync() {
   if (count == 0) return;
   DynamicJsonDocument* batch =
-    new DynamicJsonDocument(points.memoryUsage() + 384 * POINTS_BATCH_SIZE * 2);
+    new DynamicJsonDocument(POINTS_BATCH_SIZE * BYTES_PER_POINT); // allocate  same
   *batch = points; // deep copy
   JsonBatch jb{ batch };
   if (xQueueSend(flushQueue, &jb, 0) != pdTRUE) {

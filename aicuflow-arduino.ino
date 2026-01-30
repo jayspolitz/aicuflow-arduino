@@ -19,6 +19,7 @@
 // === Compiler Config ===
 #define USE_BLUETOOTH false  // BT-LE is ca 1mb large, thus optional
 #define VERBOSE false        // Debugging recommended for developers
+#define BYTES_PER_POINT 240  // Reserved memory (increase if more sensors)
 
 // === Imports ===
 #include <WiFiClientSecure.h>                    // WPA2/3? alt (insecure): #include <WiFiClient.h>
@@ -66,45 +67,50 @@ bool wifiAvailable = false;          // true once wifi connected
 // === Sensors ===
 // Register sensors for data collection,
 // and sending to the aicuflow cloud.
+// the json keys are short on purpose to reduce load.
 void registerSensors() {
   
   // Left button = binary sensor
-  sensors.registerSensor("left_button",
-    [&]() { return digitalRead(LEFT_BUTTON) == 0 ? 1.0 : 0.0; },
+  sensors.registerSensor("left",
+    [&]() { return !digitalRead(LEFT_BUTTON); },
     0, 1, TFT_PURPLE, LOG_SEND, SHOW_GRAPH);
   
   // Right button = binary sensor
-  sensors.registerSensor("right_button",
-    [&]() { return digitalRead(RIGHT_BUTTON) == 0 ? 1.0 : 0.0; },
+  sensors.registerSensor("right",
+    [&]() { return !digitalRead(RIGHT_BUTTON); },
     0, 1, TFT_BLUE, LOG_SEND, SHOW_GRAPH);
   
   // (if wifi) signal strength = analog sensor
   if (device->has_wifi && wifiAvailable)
     sensors.registerSensor("rssi",
-      []() { return (double)WiFi.RSSI(); },
+      []() { return WiFi.RSSI(); },
       -100, -30, TFT_GREEN, LOG_SEND, SHOW_GRAPH
     );
   
   // Voltage = analog sensor
-  sensors.registerSensor("voltage", // 2=ResDiv;3.3RefV;4095-12-bitADCres
-    []() { return (analogRead(34)/4095.0)*2.0*3.3*1.1; },
+  sensors.registerSensor("volt", // 2=ResDiv;3.3RefV;4095-12-bitADCres
+    []() { return (analogRead(34)/4095.0)*2.0*3.3*1.1;  },
     2.0, 6.0, TFT_RED, LOG_SEND, SHOW_GRAPH);
 
   // Temperature = analog sensor
-  sensors.registerSensor("temperature",
-    []() { return temperatureRead(); },
+  sensors.registerSensor("temp", temperatureRead,
     20, 60, TFT_ORANGE, LOG_SEND, SHOW_GRAPH);
   
   // Free Memory = discrete number "sensor"
-  sensors.registerSensor("heapfree",
+  sensors.registerSensor("mem",
     []() { return ESP.getFreeHeap() / 1024.0; },
     100, 300, TFT_CYAN, LOG_SEND, SHOW_GRAPH);
 
-  // CPU Speed = discrete number "sensor" (not graphed)
-  sensors.registerSensor("cpu_freq_hz",
-    []() { return (double)getCpuFrequencyMhz(); },
-    80, 240, TFT_YELLOW, LOG_SEND, HIDE_GRAPH);
-  
+  // Operational speed (~cpu frequency) = discrete number "sensor" (not graphed)
+  sensors.registerSensor("f",
+    []() { // old (cpu freq): return (double)getCpuFrequencyMhz();
+      const uint32_t start = micros();
+      const uint32_t duration = 10000; // 10 ms in µs
+      uint32_t cycles = 0;
+      while ((micros() - start) < duration) cycles++;
+      return (float) cycles / 10; // avg cycles in 1 ms
+    }, 0, 5000000, TFT_YELLOW, LOG_SEND, HIDE_GRAPH);
+
   // Want to add more sensors?
   //   Parameters: (key, readFunc, min, max, color, enabled, showGraph)
   
