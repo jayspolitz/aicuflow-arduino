@@ -29,12 +29,12 @@
 #include "imports/ArduinoJson/ArduinoJson.h"     // LIB NEED TO INSTALL 
 #include "library/device/Settings.cpp"           // persistent settings
 #include "library/aicuflow/AicuClient.cpp"       // --> client library you can use <--
-#include "library/sensors/SensorMeasurement.cpp" // sensor registry for measuring, plots and saving
 #include "library/graphics/TFTKeyboard.cpp"      // enter strings using buttons (cool)
 #include "library/graphics/PageManager.cpp"      // multi-page app on screens
 #include "library/graphics/closeFunctions.cpp"   // for app close timing & recognition
 #include "library/apps/core.cpp"                 // import all apps indirectly
 #endif
+#include "library/sensors/SensorMeasurement.cpp" // sensor registry for measuring, plots and saving
 
 // === Setup ===
 // TODO CHANGE THESE FACTORY SETTINGS
@@ -61,10 +61,10 @@ const int WIFI_TIMEOUT = 10000;    // 10s, 0 -> blocking till wifi
 WiFiClientSecure client;             // secure wifi conn
 AicuClient aicu(API_URL);            // aicu api client
 TFT_eSPI tft = TFT_eSPI();           // screen stuff
-SensorMeasurement sensors("");       // sensor registry (->graphs,measure)
 int screenWidth, screenHeight;       // are auto detected
-bool wifiAvailable = false;          // true once wifi connected
 #endif
+bool wifiAvailable = false;          // true once wifi connected
+SensorMeasurement sensors("");       // sensor registry (->graphs,measure)
 int LEFT_BUTTON, RIGHT_BUTTON;       // are auto detected
 int VOLTAGE_PIN;                     // is auto detected
 const DeviceProps* device = nullptr; // auto device info here
@@ -86,25 +86,27 @@ float measure_loops_per_ms () { // old (cpu freq): return (double)getCpuFrequenc
 #if IS_ESP
 float measure_wifi() { return (float) WiFi.RSSI(); }
 int measure_freeheap() { return ESP.getFreeHeap(); }
+#else
+#endif
 
 // Register sensors for data collection,
 // and sending to the aicuflow cloud.
 // the json keys are short on purpose to reduce load.
 void registerSensors() {
-  // Left button = binary sensor
-  sensors.registerSensor("left", measure_left, TFT_PURPLE, true, true);
-  // Right button = binary sensor
-  sensors.registerSensor("right", measure_right, TFT_BLUE, true, true);
-  
   // (if wifi) signal strength = analog sensor
-  if (device->has_wifi && wifiAvailable)
-    sensors.registerSensor("rssi", measure_wifi, TFT_GREEN, true, true);
+  #if IS_ESP // ESP boards only:
+    // Left button = binary sensor
+    sensors.registerSensor("left", measure_left, TFT_PURPLE, true, true);
+    // Right button = binary sensor
+    sensors.registerSensor("right", measure_right, TFT_BLUE, true, true);
+    if (device->has_wifi && wifiAvailable)
+      sensors.registerSensor("rssi", measure_wifi, TFT_GREEN, true, true);
+    // Voltage = analog sensor
+    sensors.registerSensor("volt", measure_cpu_voltage, TFT_RED, true, true);
+  #endif
   
-  // Voltage = analog sensor
-  sensors.registerSensor("volt", measure_cpu_voltage, TFT_RED, true, true);
   // Temperature = analog sensor
   sensors.registerSensor("temp", temperatureRead, TFT_ORANGE, true, true);
-  
   //#if CONFIG_IDF_TARGET_ESP32
     // Hall-Sensor (only on classic esp32)
     // sensors.registerSensor("hall", hallRead, TFT_MAGENTA, true, true);
@@ -112,8 +114,10 @@ void registerSensors() {
 
   // Operational speed (~cpu frequency) = discrete number "sensor" (not graphed)
   sensors.registerSensor("speed", measure_loops_per_ms, TFT_YELLOW, true, false);  
-  // Free Memory = discrete number "sensor"
-  sensors.registerSensor("free", measure_freeheap, TFT_CYAN, true, true);
+  #if IS_ESP // ESP boards only:
+    // Free Memory = discrete number "sensor"
+    sensors.registerSensor("free", measure_freeheap, TFT_CYAN, true, true);
+  #endif
 
   // Want to add more sensors?
   //   Parameters: (key, readFunc, color, enabled, showGraph)
@@ -124,35 +128,53 @@ void registerSensors() {
   //   Ex2) Not graphed, deactivated sensor
   //      sensors.registerSensor("uptime", []() { return millis() / 1000.0; }, TFT_MAGENTA, false, false);
 }
-#endif
 
 // === Program Sequence ===
 // Only change this if you're sure
 void setup() {
   device = &getDeviceProps();
-  #if IS_ESP
-  trackForAutoReset(); // 3x reboot before start = reset
-  
-  initPoints();
-  initDeviceGPIOPins();
-  initSerial();
-  loadSettings();
-  applySettings();
-  
-  if (device->has_display){
-    initTFTScreen();
-    bootScreen(1000);
-    setupMenus();
-  } else {
-    delay(1100);
-  }
-  
-  setupPages(); // for all devices
-  clearAutoReset();
+  #if IS_ESP      // complex app start uses modules
+    trackForAutoReset(); // 3x reboot before start = reset
+    initPoints();
+    initDeviceGPIOPins();
+    initSerial();
+    loadSettings();
+    applySettings();
+    
+    if (device->has_display){
+      initTFTScreen();
+      bootScreen(1000);
+      setupMenus();
+    } else delay(1100);
+
+    setupPages();
+    clearAutoReset();
+  #else /* AVR */ // manual startup
+    Serial.begin(115200);
+    sensors.deviceId = device->kind_short;
+    registerSensors();
   #endif
 }
+
 void loop() {
-  #if IS_ESP
-  pageManager->update(); // render apps like measurement
+  #if IS_ESP      // render apps like measurement
+    pageManager->update();
+
+  #else /* AVR */ // primitive measurement to serial
+    // time precisely
+    static uint32_t next_us = 0;
+    static const uint32_t period_us = MEASURE_DELAY_MS * 1000UL;
+    uint32_t now = micros();
+    if (next_us == 0) next_us = now + period_us;
+    if ((int32_t)(now - next_us) < 0) return;
+    next_us += period_us;
+
+    // print measurement json to serial
+    StaticJsonDocument<512> doc;
+    JsonObject obj = doc.to<JsonObject>();
+    sensors.measure();
+    sensors.toJson(obj);
+    serializeJson(obj, Serial);
+    Serial.println();
   #endif
 }

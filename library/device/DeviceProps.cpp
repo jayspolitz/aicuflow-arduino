@@ -116,3 +116,41 @@ static const DeviceProps DEV = DEVICE_PROPS_INIT;
 const DeviceProps& getDeviceProps() {
   return DEV;
 }
+
+// define missing functions the ESP32 IDF has
+#if IS_AVR
+// tft colors
+#define TFT_PURPLE 0
+#define TFT_BLUE 0
+#define TFT_GREEN 0
+#define TFT_RED 0
+#define TFT_ORANGE 0
+#define TFT_YELLOW 0
+#define TFT_CYAN 0
+#define TFT_MAGENTA 0
+#define TFT_BLACK 0
+#define TFT_WHITE 0
+#define TFT_BL -1
+
+// make arduinojson not break
+#define ARDUINOJSON_USE_LONG_LONG 1
+
+// temperature
+double temperatureRead() {
+  unsigned int wADC;
+  double t;
+  // 1. Set reference to internal 1.1V & select channel 8 (internal temp sensor)
+  ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
+  ADCSRA |= _BV(ADEN);  // Enable ADC
+  delay(20);            // Wait for reference to stabilize
+  // 2. Start conversion
+  ADCSRA |= _BV(ADSC);
+  while (bit_is_set(ADCSRA, ADSC)); // Wait for conversion to finish
+  // 3. Read ADC value (ADCW reads ADCL & ADCH correctly)
+  wADC = ADCW;
+  // 4. Convert to Celsius (standard formula: (ADC - Offset) / Slope)
+  // These values (324.31 and 1.22) vary per chip
+  t = (wADC - 324.31) / 1.22;
+  return t;
+}
+#endif
